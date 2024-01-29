@@ -1,20 +1,34 @@
 import os
 
-from cs50 import SQL
+#from cs50 import SQL
 from flask import Flask, flash, redirect, render_template, request, session
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
-
 from datetime import datetime
 from functools import wraps
+from flask_sqlalchemy import SQLAlchemy
 
-# Configure application
+# Application configuration
 app = Flask(__name__)
+
+
+# Database configuration
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(app.root_path, 'site.db')
+db = SQLAlchemy(app)
+
+
+# Define user class-model (table)
+class Users(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(50), unique=True, nullable=False)
+    password = db.Column(db.String(60), nullable=False)
+    
 
 # Configure session to use filesystem (instead of signed cookies)
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
+
 
 @app.after_request
 def after_request(response):
@@ -62,13 +76,23 @@ def login():
             flash("Password is empty", "error")
             return render_template("homepage.html")
         
-        # Query database for username
+        # Query database for user
+        existing_user = Users.query.filter_by(username=username).first()
+        
         # Ensure username exists and password is correct
+        if not existing_user:
+            flash("User doesn't exist", "error")
+            return render_template("homepage.html")
+        
+        if not check_password_hash(existing_user.password, password):
+            flash("Incorrect password", "error")
+            return render_template("homepage.html")
         
         # Remember which user has logged in
-        session["user_id"] = "admin"    # TEST SESSION
+        session["user_id"] = existing_user.id
         
         # Redirect user to home page
+        flash("User has logged in", "success")
         return redirect("/")
     
     # User reacher route via GET
@@ -107,20 +131,36 @@ def register():
             flash("Password confirmation is empty", "error")
             return render_template("register.html")
         
-        # Query database for username
-        # Ensure username is available 
-        # Insert user into database
-        # Query database for user_id    
-
-        # Remember which user has logged in
-        session["user_id"] = "admin"    # TEST SESSION
+        elif confirmation != password:
+            flash("Passwords do not match", "error")
+            return render_template("register.html")
         
-        # Redirect user to home page #
+        # Ensure username is available 
+        existing_user = Users.query.filter_by(username=username).first()
+        if existing_user:
+            flash("Username is taken", "error")
+            return render_template("register.html")
+        
+        # Insert user into database
+        new_user = Users(username=username, password=generate_password_hash(password))
+        db.session.add(new_user)
+        db.session.commit()
+
+        # Log in the new user
+        session["user_id"] = new_user.id
+        
+        # Redirect user to home page 
+        flash("Registration successful", "success")
         return redirect("/")
     
     # User reacher route via GET
     else:
         return render_template("register.html")
+
+
+@app.route("/about")
+def about():
+    return render_template("about.html")
 
 
 @app.route("/profile", methods = ["GET", "POST"])
@@ -130,4 +170,6 @@ def profile():
 
 
 if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()  # Create tables before running the app
     app.run(debug=True)
