@@ -1,0 +1,15 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Encyclopedia
+{% endblock %}
+
+{% block main %}
+<h1>ENCYCLOPEDIA</h1>
+Shows all pokemons, filters like by moves, by types, etc.
+<p></p>
+    {% for sprite in pokemon_sprites_cache %}
+        <img src="{{ sprite.url }}" alt="Pokemon Sprite">
+    {% endfor %}
+
+{% endblock %}
