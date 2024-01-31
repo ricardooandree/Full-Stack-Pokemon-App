@@ -9,7 +9,8 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from datetime import datetime
 from functools import wraps
 from flask_sqlalchemy import SQLAlchemy
-
+##################################################################################################
+# FEATURE/PARTY-SELECTOR BRANCH
 ##################################################################################################
 # Application configuration
 app = Flask(__name__)
@@ -193,7 +194,7 @@ def pokemon_name_exists(pokemon_name):
 precache_pokemon_names()
 
 # Pre-cache the first batch of 24 pokemons
-batch_fetch_pokemon(1, 0)
+batch_fetch_pokemon(3, 0)
 #print(pokemon_data_cache)
 #pokemon1 = fetch_pokemon_by_id(149)
 #print(pokemon1)
@@ -387,7 +388,7 @@ def pokedex():
             if session["i"] > 1:
                 session["i"] -= 1
             else:
-                session["i"] = 1 # IT ALREADY IS 0 - THIS IS EXTRA -
+                session["i"] = 1 # IT ALREADY IS 1 - THIS IS EXTRA -
                 
             pokemon_data = fetch_pokemon_by_id(session["i"])
 

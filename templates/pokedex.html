@@ -24,7 +24,7 @@
     ID: {{ pokemon_data.id }} <p></p>
     Name: {{ pokemon_data.name }} <p></p>
     Height: {{ pokemon_data.height }} <p></p>
-    Weigth: {{ pokemon_data.weight }} <p></p>
+    Weight: {{ pokemon_data.weight }} <p></p>
 
     Types: {{ pokemon_data.types }},
     
@@ -37,6 +37,12 @@
     Stats: {{ pokemon_data.stats }} 
 
     <p></p>
+    
+    <form action="/pokedex" method="post">
+        <input type="hidden" name="action" value="search">
+        <input name="pokemon_name" placeholder="Pokemon Name" type="text">
+        <button class="btn btn-primary" type="submit">Search</button>
+    </form>
 
     <form action="/pokedex" method="post">
         <!-- Hidden input field to indicate the action -->
@@ -44,12 +50,7 @@
 
         <!-- Previous button -->
         <button class="btn btn-primary" type="submit">Previous</button>
-    </form>
-    
-    <form action="/pokedex" method="post">
-        <input type="hidden" name="action" value="search">
-        <input name="pokemon_name" placeholder="Pokemon Name" type="text">
-        <button class="btn btn-primary" type="submit">Search</button>
+
     </form>
 
     <form action="/pokedex" method="post">
