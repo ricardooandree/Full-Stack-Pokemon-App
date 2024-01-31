@@ -9,23 +9,32 @@
     Shows one pokemon with all its info at a time (paging)
     <p></p>
 
-
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="alert alert-danger" role="alert">
+            {% for message in messages %}
+                {{ message }}
+            {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+    
     <img src="{{ pokemon_sprites_cache[i].url }}" alt="Pokemon Sprite"> <p></p>
 
-    ID: {{ pokemon_data_cache[i].id }} <p></p>
-    Name: {{ pokemon_data_cache[i].name }} <p></p>
-    Height: {{ pokemon_data_cache[i].height }} <p></p>
-    Weigth: {{ pokemon_data_cache[i].weight }} <p></p>
+    ID: {{ pokemon_data.id }} <p></p>
+    Name: {{ pokemon_data.name }} <p></p>
+    Height: {{ pokemon_data.height }} <p></p>
+    Weigth: {{ pokemon_data.weight }} <p></p>
 
-    Types: {{ pokemon_data_cache[i].types }},
+    Types: {{ pokemon_data.types }},
     
 
     <p></p>
 
-    Abilities: {{ pokemon_data_cache[i].abilities }} 
+    Abilities: {{ pokemon_data.abilities }} 
     <p></p>
 
-    Stats: {{ pokemon_data_cache[i].stats }} 
+    Stats: {{ pokemon_data.stats }} 
 
     <p></p>
 

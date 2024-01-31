@@ -1,5 +1,4 @@
 import os
-import re
 import pokebase as pb
 import requests
 
@@ -46,7 +45,8 @@ pb.cache.set_cache('C:/Users/ricar/projects/cs50-final-project/.cache/pokebase')
 pokemon_sprites_cache = [pb.SpriteResource('pokemon', pokemon_id) for pokemon_id in range(1, 494)]
 pokemon_data_cache = []
 
-def fetch_pokemon_details(url):
+# Fetch pokemon data from the PokeAPI
+def fetch_pokemon_data(url):
     # Send a GET request to the PokeAPI
     response = requests.get(url)
     
@@ -55,7 +55,7 @@ def fetch_pokemon_details(url):
         # Parse the JSON response
         pokemon_details = response.json()
 
-        # Extract types, abilities, stats, etc.
+        # Extract types, abilities, stats
         types = [type_data['type']['name'] for type_data in pokemon_details['types']]
         abilities = [ability_data['ability']['name'] for ability_data in pokemon_details['abilities']]
         stats = [{'name': stat_data['stat']['name'], 'value': stat_data['base_stat']} for stat_data in pokemon_details['stats']]
@@ -71,7 +71,19 @@ def fetch_pokemon_details(url):
             'stats': stats,
             # TODO: Add more attributes
         }
-
+        
+        # Check if the name is already in the cache
+        for index, entry in enumerate(pokemon_data_cache):
+            if entry['name'] == pokemon_data['name']:
+                # Update existing entry
+                pokemon_data_cache[index] = pokemon_data
+                break
+            
+        # Append pokemon data to the global cache if not found
+        #else:
+            #pokemon_data_cache.append(pokemon_data)
+        
+        # Return the pokemon data
         return pokemon_data
     else:
         # Print an error message if the request was not successful
@@ -79,7 +91,45 @@ def fetch_pokemon_details(url):
         return None
     
 
-def batch_fetch_pokemon_data(limit, offset=0):
+# Pre-cache all pokemon names
+def precache_pokemon_names():
+    base_url = 'https://pokeapi.co/api/v2/pokemon/?limit=493'
+ 
+    # Send a GET request to the PokeAPI to get a list of Pokemon names
+    response = requests.get(f'{base_url}')
+    
+    # Check if the request was successful (status code 200)
+    if response.status_code == 200:
+        # Parse the JSON response
+        data = response.json()
+
+        # Extract Pokemon names from data
+        for pokemon in data['results']:
+            # Get pokemon name
+            name = pokemon['name']
+            
+            # Create pokemon data dictionary with name
+            pokemon_data = {
+                'id': None,
+                'name': name,
+                'height': None,
+                'weight': None,
+                'types': None,
+                'abilities': None,
+                'stats': None,
+            }
+            
+            # Add pokemon name to the global cache
+            pokemon_data_cache.append(pokemon_data)
+            
+    else:
+        # Print an error message if the request was not successful
+        print(f"Failed to fetch Pokemon names. Status code: {response.status_code}")
+        return None
+    
+
+# Batch fetch pokemon names and URLs from PokeAPI
+def batch_fetch_pokemon(limit, offset=0):
     base_url = 'https://pokeapi.co/api/v2/pokemon/'
     
     # Set limit if higher than 24
@@ -95,20 +145,16 @@ def batch_fetch_pokemon_data(limit, offset=0):
 
         # Extract Pokemon data from the results
         for pokemon in data['results']:
-            pokemon_data = fetch_pokemon_details(pokemon['url'])
-            
-            # Append the data to the list
-            if pokemon_data:
-                pokemon_data_cache.append(pokemon_data)
+            pokemon_data = fetch_pokemon_data(pokemon['url'])
 
-        # return pokemon_data_cache  # Uncomment this line if you want to return the cache
     else:
         # Print an error message if the request was not successful
         print(f"Failed to fetch Pokemon names. Status code: {response.status_code}")
         return None
 
 
-def fetch_pokemon_data_by_id(pokemon_id):
+# Fetch pokemon data by ID
+def fetch_pokemon_by_id(pokemon_id):
     # Check if data is already cached
     for pokemon_data in pokemon_data_cache:
         if pokemon_data['id'] == pokemon_id:
@@ -116,36 +162,42 @@ def fetch_pokemon_data_by_id(pokemon_id):
 
     base_url = f'https://pokeapi.co/api/v2/pokemon/{pokemon_id}'
     
-    pokemon_data = fetch_pokemon_details(base_url)
-    
-    if pokemon_data['id'] == len(pokemon_data_cache) + 1:
-        pokemon_data_cache.append(pokemon_data)
-    
-    return pokemon_data
+    return fetch_pokemon_data(base_url)
 
 
-def fetch_pokemon_data_by_name(pokemon_name):
+# Fetch pokemon data by name
+def fetch_pokemon_by_name(pokemon_name):
     # Check if data is already cached
     for pokemon_data in pokemon_data_cache:
         if pokemon_data['name'] == pokemon_name:
-            return pokemon_data
+            if pokemon_data['id'] is not None:
+                return pokemon_data
 
     base_url = f'https://pokeapi.co/api/v2/pokemon/{pokemon_name}'
-
-    pokemon_data = fetch_pokemon_details(base_url)
     
-    if pokemon_data['id'] == len(pokemon_data_cache) + 1:
-        pokemon_data_cache.append(pokemon_data)
-    
-    return pokemon_data
+    return fetch_pokemon_data(base_url)
 
+
+# Checks if pokemon name exists
+def pokemon_name_exists(pokemon_name):
+    # Check if data is already cached
+    for pokemon_data in pokemon_data_cache:
+        if pokemon_data['name'] == pokemon_name:
+            return True
+        
+    # Name doesn't exist
+    return False
+
+
+# Pre-cache all pokemon names
+precache_pokemon_names()
 
 # Pre-cache the first batch of 24 pokemons
-batch_fetch_pokemon_data(5, 0)
+batch_fetch_pokemon(1, 0)
 #print(pokemon_data_cache)
-#pokemon1 = fetch_pokemon_data_by_id(149)
+#pokemon1 = fetch_pokemon_by_id(149)
 #print(pokemon1)
-#pokemon2 = fetch_pokemon_data_by_name("gyarados")
+#pokemon2 = fetch_pokemon_by_name("gyarados")
 #print(pokemon2)
 
 ##################################################################################################
@@ -305,7 +357,6 @@ def about():
 @login_required
 def encyclopedia():
     # TODO:
-        
     return render_template("encyclopedia.html", pokemon_sprites_cache=pokemon_sprites_cache)
 
 
@@ -316,38 +367,44 @@ def pokedex():
     
     # Initialize i in the session if it's not set
     if "i" not in session:
-        session["i"] = 0
+        session["i"] = 1
+    
+    pokemon_data = fetch_pokemon_by_id(session["i"])
     
     # User reached route via POST
     if request.method == "POST":
         action = request.form["action"]
-        number_pokemons = len(pokemon_data_cache)
         pokemon_name = request.form.get("pokemon_name")
         
         # If user clicks "Next"
         if action == "next":
             session["i"] += 1
-            
-            # If needs to cache a new pokemon
-            if session["i"] == number_pokemons:
-                pokemon_data = fetch_pokemon_data_by_id(number_pokemons + 1)
-        
-        # If user clicks "Previous"    
+            pokemon_data = fetch_pokemon_by_id(session["i"])
+
+        # If user clicks "Previous"
         elif action == "previous":
-            if session["i"] > 0:
+            # If is not first pokemon
+            if session["i"] > 1:
                 session["i"] -= 1
+            else:
+                session["i"] = 1 # IT ALREADY IS 0 - THIS IS EXTRA -
                 
-        # If user searches for a pokemon
+            pokemon_data = fetch_pokemon_by_id(session["i"])
+
+        # If user clicks "Search"
         elif action == "search":
-            pokemon_data = fetch_pokemon_data_by_name(pokemon_name)
-            i = pokemon_data['id'] - 1
-            return render_template("pokedex-search.html", i=i, pokemon_sprites_cache=pokemon_sprites_cache, pokemon_data=pokemon_data)
-        
-    # User reached route via GET or went back to 1st pokemon
-    i = session["i"]
+            if not pokemon_name:
+                flash("Pokemon name is empty", "error")
+                return render_template("pokedex.html", i=session["i"] - 1, pokemon_sprites_cache=pokemon_sprites_cache, pokemon_data=pokemon_data)
+            
+            elif not pokemon_name_exists(pokemon_name):
+                flash("Pokemon name doesn't exist", "error")
+                return render_template("pokedex.html", i=session["i"] - 1, pokemon_sprites_cache=pokemon_sprites_cache, pokemon_data=pokemon_data)
+            
+            pokemon_data = fetch_pokemon_by_name(pokemon_name)
+            session["i"] = pokemon_data['id']
 
-    return render_template("pokedex.html", i=i, pokemon_sprites_cache=pokemon_sprites_cache, pokemon_data_cache=pokemon_data_cache)
-
+    return render_template("pokedex.html", i=session["i"] - 1, pokemon_sprites_cache=pokemon_sprites_cache, pokemon_data=pokemon_data)
         
 
 @app.route("/party-selector", methods = ["GET", "POST"])
