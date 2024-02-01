@@ -50,9 +50,8 @@
 
         <!-- Previous button -->
         <button class="btn btn-primary" type="submit">Previous</button>
-
     </form>
-
+    <p></p>
     <form action="/pokedex" method="post">
         <!-- Hidden input field to indicate the action -->
         <input type="hidden" name="action" value="next">
@@ -62,3 +61,24 @@
     </form>
 
 {% endblock %}
+
+<!--
+<form action="/pokedex" method="post">
+    # Hidden input field to indicate the action 
+    <input type="hidden" name="action" id="action" value="">
+
+    # Input for Pokemon Name (for the search action)
+    <input name="pokemon_name" id="pokemon_name" placeholder="Pokemon Name" type="text">
+
+    # Buttons for different actions 
+    <button class="btn btn-primary" type="submit" onclick="setAction('search')">Search</button>
+    <button class="btn btn-primary" type="submit" onclick="setAction('previous')">Previous</button>
+    <button class="btn btn-primary" type="submit" onclick="setAction('next')">Next</button>
+</form>
+
+<script>
+    function setAction(action) {
+        // Set the value of the hidden input field to the specified action
+        document.getElementById('action').value = action;
+    }
+</script>-->

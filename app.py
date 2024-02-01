@@ -63,7 +63,7 @@ pokemon_data_cache = []
 def fetch_pokemon_data(url):
     # Send a GET request to the PokeAPI
     response = requests.get(url)
-    
+
     # Check if the request was successful (status code 200)
     if response.status_code == 200:
         # Parse the JSON response
@@ -92,7 +92,7 @@ def fetch_pokemon_data(url):
                 # Update existing entry
                 pokemon_data_cache[index] = pokemon_data
                 break
-            
+        
         # Append pokemon data to the global cache if not found
         #else:
             #pokemon_data_cache.append(pokemon_data)
@@ -143,28 +143,31 @@ def precache_pokemon_names():
     
 
 # Batch fetch pokemon names and URLs from PokeAPI
-def batch_fetch_pokemon(limit, offset=0):
+def batch_fetch_pokemon(limit, i_party):
     base_url = 'https://pokeapi.co/api/v2/pokemon/'
     
     # Set limit if higher than 24
     limit = min(limit, 24)
 
-    # Send a GET request to the PokeAPI to get a list of Pokemon names
-    response = requests.get(f'{base_url}?limit={limit}&offset={offset}')
-    
-    # Check if the request was successful (status code 200)
-    if response.status_code == 200:
-        # Parse the JSON response
-        data = response.json()
+    # Sets offset: 0 if first batch, 1 if second batch, etc.(offset = 24 -> data = 25 onwards)
+    offset = i_party * limit
 
-        # Extract Pokemon data from the results
-        for pokemon in data['results']:
-            pokemon_data = fetch_pokemon_data(pokemon['url'])
+    # Create a set for all pokemon IDs
+    pokemon_ids = set() 
 
-    else:
-        # Print an error message if the request was not successful
-        print(f"Failed to fetch Pokemon names. Status code: {response.status_code}")
-        return None
+    # Iterate pokemon_data_cache and get the pokemon IDs
+    for pokemon_data in pokemon_data_cache:
+        pokemon_id = pokemon_data.get('id')
+        if pokemon_id is not None:
+            pokemon_ids.add(pokemon_id)
+
+    # Iterate pokemon_ids and cache pokemon if it doesn't exist
+    for i in range(offset + 1, offset + limit + 1):
+        # If pokemon not in cache
+        if i not in pokemon_ids:
+            pokemon_data = fetch_pokemon_data(f'{base_url}/{i}')
+            
+    return offset
 
 
 # Fetch pokemon data by ID
@@ -203,11 +206,29 @@ def pokemon_name_exists(pokemon_name):
     return False
 
 
+def pokemon_id_exists(pokemon_id):
+    # Check if data is already cached
+    for pokemon_data in pokemon_data_cache:
+        if pokemon_data['id'] == pokemon_id:
+            return True
+        
+    # ID doesn't exist
+    return False
+    
+    
 # Pre-cache all pokemon names
 precache_pokemon_names()
 
 # Pre-cache the first batch of 24 pokemons
-batch_fetch_pokemon(6, 0)
+#fetch_pokemon_by_id(1)
+#print(pokemon_data_cache[0])
+#print()
+batch_fetch_pokemon(12, 0)
+
+#batch_fetch_pokemon(2)
+#fetch_pokemon_by_id(1)
+#print(pokemon_data_cache[0])
+
 ##################################################################################################
 @app.after_request
 def after_request(response):
@@ -379,70 +400,96 @@ def encyclopedia():
 @login_required
 def pokedex():
     # TODO:
-    
+    # FIXME: ONLY CHANGE: i -> i_pokedex 
     # Initialize i in the session if it's not set
-    if "i" not in session:
-        session["i"] = 1
+    if "i_pokedex" not in session:
+        session["i_pokedex"] = 1
     
-    pokemon_data = fetch_pokemon_by_id(session["i"])
+    pokemon_data = fetch_pokemon_by_id(session["i_pokedex"])
     
     # User reached route via POST
     if request.method == "POST":
         action = request.form["action"]
         pokemon_name = request.form.get("pokemon_name")
-        
+
         # If user clicks "Next"
         if action == "next":
-            session["i"] += 1
-            pokemon_data = fetch_pokemon_by_id(session["i"])
+            session["i_pokedex"] += 1
+            pokemon_data = fetch_pokemon_by_id(session["i_pokedex"])
 
         # If user clicks "Previous"
         elif action == "previous":
             # If is not first pokemon
-            if session["i"] > 1:
-                session["i"] -= 1
+            if session["i_pokedex"] > 1:
+                session["i_pokedex"] -= 1
             else:
-                session["i"] = 1 # IT ALREADY IS 1 - THIS IS EXTRA -
+                session["i_pokedex"] = 1 # IT ALREADY IS 1 - THIS IS EXTRA -
                 
-            pokemon_data = fetch_pokemon_by_id(session["i"])
+            pokemon_data = fetch_pokemon_by_id(session["i_pokedex"])
 
         # If user clicks "Search"
         elif action == "search":
             if not pokemon_name:
                 flash("Pokemon name is empty", "error")
-                return render_template("pokedex.html", i=session["i"] - 1, pokemon_sprites_cache=pokemon_sprites_cache, pokemon_data=pokemon_data)
+                return render_template("pokedex.html", i=session["i_pokedex"] - 1, pokemon_sprites_cache=pokemon_sprites_cache, pokemon_data=pokemon_data)
             
             elif not pokemon_name_exists(pokemon_name):
                 flash("Pokemon name doesn't exist", "error")
-                return render_template("pokedex.html", i=session["i"] - 1, pokemon_sprites_cache=pokemon_sprites_cache, pokemon_data=pokemon_data)
+                return render_template("pokedex.html", i=session["i_pokedex"] - 1, pokemon_sprites_cache=pokemon_sprites_cache, pokemon_data=pokemon_data)
             
             pokemon_data = fetch_pokemon_by_name(pokemon_name)
-            session["i"] = pokemon_data['id']
+            session["i_pokedex"] = pokemon_data['id']
 
-    return render_template("pokedex.html", i=session["i"] - 1, pokemon_sprites_cache=pokemon_sprites_cache, pokemon_data=pokemon_data)
+    return render_template("pokedex.html", i=session["i_pokedex"] - 1, pokemon_sprites_cache=pokemon_sprites_cache, pokemon_data=pokemon_data)
         
 
 @app.route("/party", methods = ["GET", "POST"])
 @login_required
-def party_selector():
+def party():
     # TODO:
     
+    # Initialize i in the session if it's not set
+    if "i_party" not in session:
+        session["i_party"] = 0
+        offset = 0
+        
     # If user reached route via POST
     if request.method == "POST":
-        print("HELLO")
+        action = request.form["action"]
+
+        # If user clicks "Next"
+        if action == "next":
+            # Fetch next batch of pokemon 
+            session["i_party"] += 1
+            offset = batch_fetch_pokemon(12, session["i_party"])
+            #return render_template("party.html", i=offset, pokemon_sprites_cache=pokemon_sprites_cache, pokemon_data_cache=pokemon_data_cache)
+            
+
+        # If user clicks "Previous"
+        elif action == "previous":
+            # If is not first pokemon
+            if session["i_party"] > 0:
+                session["i_party"] -= 1
+            else:
+                session["i_party"] = 0 # IT ALREADY IS 1 - THIS IS EXTRA -
+                
+            # Fetch pokemon batch
+            offset = batch_fetch_pokemon(12, session["i_party"])
+            #return render_template("party.html", i=offset, pokemon_sprites_cache=pokemon_sprites_cache, pokemon_data_cache=pokemon_data_cache)
+            
+        # If user clicks "Search"
+        elif action == "search":
+            print("SEARCH")
+            pokemon_id = request.form.get("pokemon_id")
+            pokemon_name = request.form.get("pokemon_name")
+            pokemon_type = request.form.get("pokemon_type")
+            pokemon_stat = request.form.get("pokemon_stat")
+            if pokemon_type is None:    
+                print("TYPE IS NONE")
+            
     
     # If user reached route via GET
-    else:
-        pokemon_sprites = []
-        i = 0
-        
-        for sprite in pokemon_sprites_cache:
-            pokemon_sprites.append(sprite)
-            i += 1
-            if i == 6:
-                break
-            
-        return render_template("party.html", i=i, pokemon_sprites=pokemon_sprites, pokemon_data_cache=pokemon_data_cache)
+    return render_template("party.html", i=offset, pokemon_sprites_cache=pokemon_sprites_cache, pokemon_data_cache=pokemon_data_cache)
 
 
 @app.route("/settings", methods = ["GET", "POST"])

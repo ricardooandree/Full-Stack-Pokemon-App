@@ -16,20 +16,37 @@
 
     <!-- Search bar -->
     <form action="/party" method="POST" class="d-flex align-items-center justify-content-center">
+        <!-- ID -->
         <input autocomplete="off" class="form-control w-auto" name="pokemon_id" placeholder="ID" type="number" min="1" max="493">
         
-        <input autocomplete="off" autofocus class="form-control mx-2 w-auto" name="pokemon_name" placeholder="Name" type="text">
+        <!-- Name -->
+        <input autocomplete="off" class="form-control mx-2 w-auto" name="pokemon_name" placeholder="Name" type="text">
         
-        <select id="type" name="type" class="form-control mx-2 w-auto">
+        <!-- Type -->
+        <select id="type" name="pokemon_type" class="form-control mx-2 w-auto">
             <option value="" disabled selected hidden>Type</option>
             <option value="normal">Normal</option>
             <option value="fire">Fire</option>
+            <option value="water">Water</option>
+            <option value="electric">Electric</option>
             <option value="grass">Grass</option>
+            <option value="ice">Ice</option>
+            <option value="fighting">Fighting</option>
+            <option value="poison">Poison</option>
+            <option value="ground">Ground</option>
+            <option value="flying">Flying</option>
+            <option value="psychic">Psychic</option>
+            <option value="bug">Bug</option>
+            <option value="rock">Rock</option>
+            <option value="ghost">Ghost</option>
             <option value="dragon">Dragon</option>
-            <!-- Add other types as needed -->
+            <option value="dark">Dark</option>
+            <option value="steel">Steel</option>
+            <option value="fairy">Fairy</option>
         </select>
 
-        <select id="type" name="type" class="form-control mx-2 w-auto">
+        <!-- Stat -->
+        <select id="stat" name="pokemon_stat" class="form-control mx-2 w-auto">
             <option value="" disabled selected hidden>Stat</option>
             <option value="hp">HP</option>
             <option value="attack">Attack</option>
@@ -37,16 +54,16 @@
             <option value="spattack">Sp. Attack</option>
             <option value="spdefense">Sp. Defense</option>
             <option value="speed">Speed</option>
-            <!-- Add other types as needed -->
         </select>
-    
-        <button class="btn btn-primary" type="submit">Search</button>
+        
+        <!-- Search Button -->
+        <button class="btn btn-primary" type="submit" name="action" value="search">Search</button>
     </form>
-
+    
     <p></p>
     
     <!-- Sprites display -->
-    {% for sprite in pokemon_sprites %}
+    {% for sprite in pokemon_sprites_cache[i:i+12] %}
         <img src="{{ sprite.url }}" alt="Pokemon Sprite" class="clickable-sprite" data-pokemon-id="{{ sprite.id }}">
     {% endfor %}
 
@@ -56,6 +73,14 @@
             <p id="pokemon-details">Details will be displayed here...</p>
         </div>
     </div>
+
+    <p></p>
+
+    <!-- Previous and Next Buttons -->
+    <form action="/party" method="POST">
+        <button class="btn btn-primary" type="submit" name="action" value="previous">Previous</button>
+        <button class="btn btn-primary" type="submit" name="action" value="next">Next</button>
+    </form>
 {% endblock %}
 
 {% block script %}
