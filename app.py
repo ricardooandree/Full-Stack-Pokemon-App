@@ -9,6 +9,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from datetime import datetime
 from functools import wraps
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import relationship
 ##################################################################################################
 # FEATURE/PARTY-SELECTOR BRANCH
 ##################################################################################################
@@ -31,6 +32,18 @@ class Users(db.Model):
     username = db.Column(db.String(50), unique=True, nullable=False)
     password = db.Column(db.String(60), nullable=False)
     
+    # Define the one-to-many relationship with PartyPokemon
+    party_pokemons = db.relationship('PartyPokemon', backref='user', lazy=True)
+
+
+class PartyPokemon(db.Model):
+    __tablename__ = 'partypokemon'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    pokemon_id = db.Column(db.Integer, nullable=False)
+    pokemon_name = db.Column(db.String(80), nullable=False)
+
 
 # Configure session to use filesystem (instead of signed cookies)
 app.config["SESSION_PERMANENT"] = False
@@ -194,13 +207,7 @@ def pokemon_name_exists(pokemon_name):
 precache_pokemon_names()
 
 # Pre-cache the first batch of 24 pokemons
-batch_fetch_pokemon(3, 0)
-#print(pokemon_data_cache)
-#pokemon1 = fetch_pokemon_by_id(149)
-#print(pokemon1)
-#pokemon2 = fetch_pokemon_by_name("gyarados")
-#print(pokemon2)
-
+batch_fetch_pokemon(6, 0)
 ##################################################################################################
 @app.after_request
 def after_request(response):
@@ -231,6 +238,13 @@ def login_required(f):
 @app.route("/")
 @login_required
 def dashboard():
+    user = Users.query.filter_by(username="ricardo").first()
+    #new_partypokemon = PartyPokemon(user_id=user.id, pokemon_id=1, pokemon_name="Bulbasaur")
+    #db.session.add(new_partypokemon)
+    #db.session.commit()
+    #new_partypokemon = PartyPokemon(user_id=user.id, pokemon_id=149, pokemon_name="dragonite")
+    #db.session.add(new_partypokemon)
+    #db.session.commit()
     return render_template("dashboard.html")
 
 
@@ -345,9 +359,9 @@ def register():
     # User reacher route via GET
     else:
         return render_template("register.html")
+
+
 ##################################################################################################
-
-
 @app.route("/about")
 def about():
     # TODO:
@@ -408,11 +422,27 @@ def pokedex():
     return render_template("pokedex.html", i=session["i"] - 1, pokemon_sprites_cache=pokemon_sprites_cache, pokemon_data=pokemon_data)
         
 
-@app.route("/party-selector", methods = ["GET", "POST"])
+@app.route("/party", methods = ["GET", "POST"])
 @login_required
 def party_selector():
     # TODO:
-    return render_template("party-selector.html")
+    
+    # If user reached route via POST
+    if request.method == "POST":
+        print("HELLO")
+    
+    # If user reached route via GET
+    else:
+        pokemon_sprites = []
+        i = 0
+        
+        for sprite in pokemon_sprites_cache:
+            pokemon_sprites.append(sprite)
+            i += 1
+            if i == 6:
+                break
+            
+        return render_template("party.html", i=i, pokemon_sprites=pokemon_sprites, pokemon_data_cache=pokemon_data_cache)
 
 
 @app.route("/settings", methods = ["GET", "POST"])

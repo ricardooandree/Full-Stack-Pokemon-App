@@ -1,0 +1,64 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Party
+{% endblock %}
+
+{% block style %}
+    <!-- CSS stylesheet -->
+    <link href="/static/party-styles.css" rel="stylesheet">
+{% endblock %}
+
+{% block main %}
+    <h1>PARTY SELECTOR</h1>
+    Select pokemons for your party, favorite pokemons, etc.
+    <p></p>
+
+    <!-- Search bar -->
+    <form action="/party" method="POST" class="d-flex align-items-center justify-content-center">
+        <input autocomplete="off" class="form-control w-auto" name="pokemon_id" placeholder="ID" type="number" min="1" max="493">
+        
+        <input autocomplete="off" autofocus class="form-control mx-2 w-auto" name="pokemon_name" placeholder="Name" type="text">
+        
+        <select id="type" name="type" class="form-control mx-2 w-auto">
+            <option value="" disabled selected hidden>Type</option>
+            <option value="normal">Normal</option>
+            <option value="fire">Fire</option>
+            <option value="grass">Grass</option>
+            <option value="dragon">Dragon</option>
+            <!-- Add other types as needed -->
+        </select>
+
+        <select id="type" name="type" class="form-control mx-2 w-auto">
+            <option value="" disabled selected hidden>Stat</option>
+            <option value="hp">HP</option>
+            <option value="attack">Attack</option>
+            <option value="defense">Defense</option>
+            <option value="spattack">Sp. Attack</option>
+            <option value="spdefense">Sp. Defense</option>
+            <option value="speed">Speed</option>
+            <!-- Add other types as needed -->
+        </select>
+    
+        <button class="btn btn-primary" type="submit">Search</button>
+    </form>
+
+    <p></p>
+    
+    <!-- Sprites display -->
+    {% for sprite in pokemon_sprites %}
+        <img src="{{ sprite.url }}" alt="Pokemon Sprite" class="clickable-sprite" data-pokemon-id="{{ sprite.id }}">
+    {% endfor %}
+
+    <div id="pokemon-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p id="pokemon-details">Details will be displayed here...</p>
+        </div>
+    </div>
+{% endblock %}
+
+{% block script %}
+    <!-- JS script -->
+    <script src="/static/party-script.js"></script>
+{% endblock %}
