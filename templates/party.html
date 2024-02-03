@@ -23,7 +23,10 @@
             </div>
         {% endif %}
     {% endwith %}
-    
+
+    <!-- Alert for adding pokemons to the party -->
+    <div id="message-container"></div>
+
     <!-- Search bar -->
     <form id="pokemonForm" action="/party" method="POST" class="d-flex align-items-center justify-content-center">
         <!-- ID -->
@@ -58,12 +61,24 @@
         <!-- Search Button -->
         <button class="btn btn-primary mx-2 w-auto" type="submit" name="action" value="search">Search</button>
     </form>
-    
+
     <p></p>
 
     <!-- Empty Party Containers -->
-    {% for _ in range(6) %}
-        <img src="{{ pokemon_sprites_cache[131].url }}" alt="Pokemon Sprite" class="clickable-sprite party-slot" data-pokemon-party-id="{{ pokemon_sprites_cache[131].sprite_id }}">
+    {% for i in range(6) %}
+        {% if i < user_party_indexes|length %}
+            <img src="{{ pokemon_sprites_cache[user_party_indexes[i]].url }}" alt="Pokemon Sprite" class="clickable-sprite party-slot" data-pokemon-id="{{ pokemon_sprites_cache[user_party_indexes[i]].sprite_id }}">
+            <div id="pokemon-modal" class="modal">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <p id="pokemon-details">Details will be displayed here...</p>
+                </div>
+            </div>
+        {% else %}
+            <div class="empty-sprite-container">
+                <!-- You can customize the empty container appearance here -->
+            </div>
+        {% endif %}
     {% endfor %}
 
     <p></p>
@@ -97,7 +112,7 @@
     {% else %}
         <!-- Display pokemon sprites in the page -->
         {% for sprite in pokemon_sprites_cache[i:i+limit] %}
-            <img src="{{ sprite.url }}" alt="Pokemon Sprite" class="clickable-sprite" data-pokemon-id="{{ sprite.sprite_id }}">
+        <img src="{{ sprite.url }}" alt="Pokemon Sprite" class="clickable-sprite" data-pokemon-id="{{ sprite.sprite_id }}" id="pokemon-{{ sprite.sprite_id }}">
         {% endfor %}
 
         <div id="pokemon-modal" class="modal">

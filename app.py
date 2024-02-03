@@ -3,7 +3,7 @@ import pokebase as pb
 import requests
 
 #from cs50 import SQL
-from flask import Flask, flash, redirect, render_template, request, session
+from flask import Flask, flash, redirect, render_template, request, session, jsonify
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 from datetime import datetime
@@ -482,10 +482,32 @@ def pokedex():
     return render_template("pokedex.html", i=session["i_pokedex"] - 1, pokemon_sprites_cache=pokemon_sprites_cache, pokemon_data=pokemon_data)
         
 
+@app.route("/add_to_party/<int:pokemon_id>", methods=["GET"])
+@login_required
+def add_to_party(pokemon_id):
+    # Fetch pokemon data by ID
+    pokemon_data = fetch_pokemon_by_id(pokemon_id)
+    
+    # Count number of entries in user's party
+    count = PartyPokemon.query.filter_by(user_id=session["user_id"]).count()
+    
+    # Check if user's party is full
+    if count < 6:
+        # Add pokemon to user's party - insert into database
+        new_pokemon = PartyPokemon(user_id=session["user_id"], pokemon_id=pokemon_id, pokemon_name=pokemon_data['name'])
+        db.session.add(new_pokemon)
+        db.session.commit()  
+        
+        return jsonify(success=True, message="Pokemon added to party successfully")
+                             
+    else:
+        return jsonify(success=False, message="Party is full")
+
+
 @app.route("/get_pokemon_details/<int:pokemon_id>", methods=["GET"])
 @login_required
 def get_pokemon_details(pokemon_id):
-    # Fetch details for the given Pokemon ID from the PokeAPI
+    # Fetch pokemon data by ID
     return fetch_pokemon_by_id(pokemon_id)
 
 
@@ -510,6 +532,7 @@ def search_by_type(pokemon_type):
             pokemon_ids.append(i)
     
     return pokemon_ids
+
 
 def search_pokemon(i_id, i_name):
     # Case 1: User inputs id and name
@@ -537,8 +560,20 @@ def search_pokemon(i_id, i_name):
 @login_required
 def party():
     # TODO:
+    # Sets limit of sprites displayed
     limit = 44
     
+    # Fetch pokemon IDs in the user's party from the database
+    user_party_pokemons = PartyPokemon.query.filter_by(user_id=session["user_id"]).with_entities(PartyPokemon.pokemon_id).all()
+
+    # Extract the pokemon IDs from the result set
+    user_party_pokemon_ids = [pokemon_id for (pokemon_id,) in user_party_pokemons]
+    
+    # Transform the user pokemon IDs into sprite indexes
+    user_party_indexes = []
+    for id in user_party_pokemon_ids:
+        user_party_indexes.append(id - 1)
+
     # Initialize i in the session if it's not set
     if "i_party" not in session:
         session["i_party"] = 0
@@ -559,7 +594,7 @@ def party():
                 flash("No pokemons with that type in the current page", "error")
                 return render_template("party.html", pokemon_index=-1, pokemon_type='', i=offset, limit=limit, pokemon_sprites_cache=pokemon_sprites_cache)
             
-            return render_template("party.html", pokemon_type=pokemon_type, i_type=i_type, pokemon_sprites_cache=pokemon_sprites_cache)
+            return render_template("party.html", pokemon_type=pokemon_type, i_type=i_type, pokemon_sprites_cache=pokemon_sprites_cache, user_party_indexes=user_party_indexes)
         
         # User had another action: previous, next or search
         else:    
@@ -587,7 +622,7 @@ def party():
                     # Offset to keep it on the same page
                     offset = session["i_party"] * limit
                     
-                    return render_template("party.html", pokemon_index=-1, pokemon_type='', i=offset, limit=limit, pokemon_sprites_cache=pokemon_sprites_cache)
+                    return render_template("party.html", pokemon_index=-1, pokemon_type='', i=offset, limit=limit, pokemon_sprites_cache=pokemon_sprites_cache, user_party_indexes=user_party_indexes)
 
                 # Aux variables to store the pokemon ID by ID or name
                 i_id = None
@@ -610,14 +645,14 @@ def party():
                 
                 # Check for errors with the search pokemon index
                 if pokemon_index != -1:
-                    return render_template("party.html", pokemon_index=pokemon_index, pokemon_type='', i=0, limit=limit, pokemon_sprites_cache=pokemon_sprites_cache)
+                    return render_template("party.html", pokemon_index=pokemon_index, pokemon_type='', i=0, limit=limit, pokemon_sprites_cache=pokemon_sprites_cache, user_party_indexes=user_party_indexes)
             
     # If user reached route via GET
     pokemon_index = -1
     pokemon_type = ''
     offset = session["i_party"] * limit
     
-    return render_template("party.html", pokemon_index=pokemon_index, pokemon_type=pokemon_type, i=offset, limit=limit, pokemon_sprites_cache=pokemon_sprites_cache)
+    return render_template("party.html", pokemon_index=pokemon_index, pokemon_type=pokemon_type, i=offset, limit=limit, pokemon_sprites_cache=pokemon_sprites_cache, user_party_indexes=user_party_indexes)
 
 
 @app.route("/settings", methods = ["GET", "POST"])
