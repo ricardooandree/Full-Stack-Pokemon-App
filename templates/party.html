@@ -1,0 +1,110 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Party
+{% endblock %}
+
+{% block style %}
+    <!-- CSS stylesheet -->
+    <link href="/static/party-styles.css" rel="stylesheet">
+{% endblock %}
+
+{% block main %}
+    <h1>PARTY SELECTOR</h1>
+    Select pokemons for your party, favorite pokemons, etc.
+    <p></p>
+
+    <!-- Alert for adding pokemons to the party -->
+    <div id="message-container"></div>
+
+    <!-- Search bar -->
+    <form id="pokemonForm" action="/party" method="POST" class="d-flex align-items-center justify-content-center">
+        <!-- ID -->
+        <input autocomplete="off" class="form-control w-auto" name="pokemon_id" placeholder="ID" type="number" min="1" max="493">
+        
+        <!-- Name -->
+        <input autocomplete="off" class="form-control mx-2 w-auto" name="pokemon_name" placeholder="Name" type="text">
+        
+        <!-- Type -->
+        <select id="type" name="pokemon_type" class="form-control mx-2 w-auto">
+            <option value="" disabled selected hidden>Type</option>
+            <option value="normal">Normal</option>
+            <option value="fire">Fire</option>
+            <option value="water">Water</option>
+            <option value="electric">Electric</option>
+            <option value="grass">Grass</option>
+            <option value="ice">Ice</option>
+            <option value="fighting">Fighting</option>
+            <option value="poison">Poison</option>
+            <option value="ground">Ground</option>
+            <option value="flying">Flying</option>
+            <option value="psychic">Psychic</option>
+            <option value="bug">Bug</option>
+            <option value="rock">Rock</option>
+            <option value="ghost">Ghost</option>
+            <option value="dragon">Dragon</option>
+            <option value="dark">Dark</option>
+            <option value="steel">Steel</option>
+            <option value="fairy">Fairy</option>
+        </select>
+        
+        <!-- Search Button -->
+        <button class="btn btn-primary mx-2 w-auto" type="submit" name="action" value="search">Search</button>
+    </form>
+
+    <p></p>
+
+    <!-- Display party pokemon sprites -->
+    {% for i in range(6) %}
+        {% if i < user_party_indexes|length %}
+            <!-- Display party pokemon sprites-->
+            <img id="party-sprite" src="{{ pokemon_sprites_cache[user_party_indexes[i]].url }}" alt="Pokemon Sprite" class="clickable-sprite party-slot" data-pokemon-id="{{ pokemon_sprites_cache[user_party_indexes[i]].sprite_id }}">
+        {% else %}
+        <!-- Display empty party container -->
+            <div class="empty-sprite-container"></div>
+        {% endif %}
+    {% endfor %}
+
+    <p></p>
+
+    <!-- Display Pokemon Sprites-->
+    {% if pokemon_type is not none and pokemon_type != "" %}
+        <!-- Display pokemon sprites by searched type -->
+        {% for index in i_type %}
+            {% if index < 493 %}
+                {% set sprite = pokemon_sprites_cache[index] %}
+                <img src="{{ sprite.url }}" alt="Pokemon Sprite" class="clickable-sprite" data-pokemon-id="{{ sprite.sprite_id }}">
+            {% endif %}
+        {% endfor %}
+    {% elif pokemon_index != -1 %}
+        <!-- Display pokemon sprite by searched pokemon -->
+        <img src="{{ pokemon_sprites_cache[pokemon_index].url }}" alt="Pokemon Sprite" class="clickable-sprite" data-pokemon-id="{{ pokemon_sprites_cache[pokemon_index].sprite_id }}">
+    {% else %}
+        <!-- Display pokemon sprites in the page -->
+        {% for sprite in pokemon_sprites_cache[i:i+limit] %}
+        <img src="{{ sprite.url }}" alt="Pokemon Sprite" class="clickable-sprite" data-pokemon-id="{{ sprite.sprite_id }}" id="pokemon-{{ sprite.sprite_id }}">
+        {% endfor %}
+    {% endif %}
+
+    <!-- Modal structure -->
+    <div id="pokemon-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p id="pokemon-details">Details will be displayed here...</p>
+        </div>
+    </div>
+
+    <p></p>
+
+    <!-- Previous and Next Buttons -->
+    <form action="/party" method="POST">
+        <button class="btn btn-primary" type="submit" name="action" value="previous">Previous</button>
+        <button class="btn btn-primary" type="submit" name="action" value="next">Next</button>
+    </form>
+{% endblock %}
+
+{% block script %}
+    <!-- JS script -->
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="/static/party-script.js"></script>
+{% endblock %}
