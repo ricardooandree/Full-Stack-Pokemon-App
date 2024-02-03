@@ -2,11 +2,12 @@
 document.addEventListener('DOMContentLoaded', () => {
     let modal = document.getElementById('pokemon-modal');
     let sprites = document.querySelectorAll('.clickable-sprite');
-    let alert_message = document.getElementById('message-container');
+    let alertMessage = document.getElementById('message-container');
 
     sprites.forEach(sprite => {
         sprite.addEventListener('click', async () => {
             let pokemonId = sprite.dataset.pokemonId;
+            let imageId = sprite.id;
     
             if (pokemonId) {
                 try {
@@ -26,58 +27,54 @@ document.addEventListener('DOMContentLoaded', () => {
                     document.getElementById('pokemon-details').innerText = detailsString;
     
                     // Remove existing buttons
-                    document.querySelectorAll('.add-to-party-button').forEach(button => {
+                    document.querySelectorAll('.add-to-party-button, .remove-from-party-button').forEach(button => {
                         button.remove();
                     });
-
-                    // Create and append "Add to Party" button
+    
                     let addButton = document.createElement('button');
-                    addButton.className = 'btn btn-primary mx-2 w-auto add-to-party-button';
+                    let buttonText, buttonClass;
+    
+                    if (imageId === 'party-sprite') {
+                        buttonText = 'Remove from Party';
+                        buttonClass = 'btn btn-danger mx-2 w-auto remove-from-party-button';
+                    } else {
+                        buttonText = 'Add to Party';
+                        buttonClass = 'btn btn-primary mx-2 w-auto add-to-party-button';
+                    }
+    
+                    addButton.className = buttonClass;
                     addButton.type = 'button';
-                    addButton.innerText = 'Add to Party';
+                    addButton.innerText = buttonText;
                     addButton.dataset.pokemonId = pokemonId; // Set the dataset for later retrieval
+    
                     addButton.addEventListener('click', async () => {
-                        // Send AJAX request to add to party
+                        // Send AJAX request to add/remove from party
                         try {
-                            let response = await fetch(`/add_to_party/${pokemonId}`);
+                            let response = await fetch(`/${imageId === 'party-sprite' ? 'remove_from_party' : 'add_to_party'}/${pokemonId}`);
                             let result = await response.json();
-                            
-                            // Get the message container element
-                            let messageContainer = document.getElementById('message-container');
 
-                            // Create a new div element to hold the message
-                            let messageDiv = document.createElement('div');
+                            // Store the alert message in session storage
+                            sessionStorage.setItem('alertMessage', result.message);
 
-                            // Add classes to the div
-                            messageDiv.classList.add('alert', 'alert-dark');
-                            
-                            // Set the role attribute
-                            messageDiv.setAttribute('role', 'alert');
-
-                            // Set the message text
-                            messageDiv.innerText = result.message;
-
-                            // Append the message div to the container
-                            messageContainer.appendChild(messageDiv);
-
-                            // Hide the message after a few seconds
-                            setTimeout(() => {
-                                messageDiv.style.display = 'none';
-                                alert_message.style.display = 'none';
-
-                            }, 5000);  // Hide after 5 seconds
-
-                            // Hide the modal when successfully added to the party
+                            // Close the modal
                             modal.style.display = 'none';
 
+                            // Sets timeout to redirect after 0.15 seconds
+                            setTimeout(() => {
+                                window.location.href = '/party';
+                            }, 150);  // Redirect after 0.15 seconds
+
                         } catch (error) {
-                            console.error('Error adding to party:', error);
+                            console.error(`Error ${imageId === 'party-sprite' ? 'removing from' : 'adding to'} the party:`, error);
                         }
                     });
-    
+
+                    // Append the button to the modal content
                     document.querySelector('.modal-content').appendChild(addButton);
-    
+                    
+                    // Show the modal
                     modal.style.display = 'block';
+
                 } catch (error) {
                     console.error('Error fetching Pokemon details:', error);
                 }
@@ -99,6 +96,27 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
+    // Check for the existence of the alert message in session storage
+    let storedAlertMessage = sessionStorage.getItem('alertMessage');
+    if (storedAlertMessage) {
+        // Display the alert message
+        let messageContainer = document.getElementById('message-container');
+        let messageDiv = document.createElement('div');
+        messageDiv.classList.add('alert', 'alert-dark');
+        messageDiv.setAttribute('role', 'alert');
+        messageDiv.innerText = storedAlertMessage;
+        messageContainer.appendChild(messageDiv);
+
+        // Hide the message after a few seconds
+        setTimeout(() => {
+            messageDiv.style.display = 'none';
+            alertMessage.style.display = 'none';
+        }, 5000);  // Hide after 5 seconds
+
+        // Clear the stored alert message in session storage
+        sessionStorage.removeItem('alertMessage');
+    }
+
     // Listen for the change event on the type dropdown
     $('#type').change(function () {
         $('#pokemonForm').submit();

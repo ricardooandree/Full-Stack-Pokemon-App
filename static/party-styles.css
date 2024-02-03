@@ -50,9 +50,7 @@
 }
 
 .party-slot {
-    /* Add specific styles for party slots */
-    /* For example: */
-    margin-right: 10px; /* Add margin between party slots */
+    margin-right: 15px; /* Add margin between party slots */
 }
 
 .empty-sprite-container {

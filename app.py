@@ -504,6 +504,28 @@ def add_to_party(pokemon_id):
         return jsonify(success=False, message="Party is full")
 
 
+@app.route("/remove_from_party/<int:pokemon_id>", methods=["GET"])
+@login_required
+def remove_from_party(pokemon_id):
+    # Fetch pokemon data by ID
+    pokemon_data = fetch_pokemon_by_id(pokemon_id)
+    
+    # Count number of entries in user's party
+    count = PartyPokemon.query.filter_by(user_id=session["user_id"]).count()
+    
+    # Check if user's party isn't empty
+    if count > 0:
+        # Remove pokemon from user's party - delete from database
+        pokemon = PartyPokemon.query.filter_by(user_id=session["user_id"]).filter_by(pokemon_id=pokemon_id).first()
+        db.session.delete(pokemon)
+        db.session.commit()  
+        
+        return jsonify(success=True, message="Pokemon removed from party successfully")
+                             
+    else:
+        return jsonify(success=False, message="Party is empty")
+    
+    
 @app.route("/get_pokemon_details/<int:pokemon_id>", methods=["GET"])
 @login_required
 def get_pokemon_details(pokemon_id):

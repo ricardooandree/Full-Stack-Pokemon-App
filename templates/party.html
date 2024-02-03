@@ -14,16 +14,6 @@
     Select pokemons for your party, favorite pokemons, etc.
     <p></p>
 
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            <div class="alert alert-danger" role="alert">
-            {% for message in messages %}
-                {{ message }}
-            {% endfor %}
-            </div>
-        {% endif %}
-    {% endwith %}
-
     <!-- Alert for adding pokemons to the party -->
     <div id="message-container"></div>
 
@@ -64,20 +54,14 @@
 
     <p></p>
 
-    <!-- Empty Party Containers -->
+    <!-- Display party pokemon sprites -->
     {% for i in range(6) %}
         {% if i < user_party_indexes|length %}
-            <img src="{{ pokemon_sprites_cache[user_party_indexes[i]].url }}" alt="Pokemon Sprite" class="clickable-sprite party-slot" data-pokemon-id="{{ pokemon_sprites_cache[user_party_indexes[i]].sprite_id }}">
-            <div id="pokemon-modal" class="modal">
-                <div class="modal-content">
-                    <span class="close">&times;</span>
-                    <p id="pokemon-details">Details will be displayed here...</p>
-                </div>
-            </div>
+            <!-- Display party pokemon sprites-->
+            <img id="party-sprite" src="{{ pokemon_sprites_cache[user_party_indexes[i]].url }}" alt="Pokemon Sprite" class="clickable-sprite party-slot" data-pokemon-id="{{ pokemon_sprites_cache[user_party_indexes[i]].sprite_id }}">
         {% else %}
-            <div class="empty-sprite-container">
-                <!-- You can customize the empty container appearance here -->
-            </div>
+        <!-- Display empty party container -->
+            <div class="empty-sprite-container"></div>
         {% endif %}
     {% endfor %}
 
@@ -92,36 +76,23 @@
                 <img src="{{ sprite.url }}" alt="Pokemon Sprite" class="clickable-sprite" data-pokemon-id="{{ sprite.sprite_id }}">
             {% endif %}
         {% endfor %}
-
-        <div id="pokemon-modal" class="modal">
-            <div class="modal-content">
-                <span class="close">&times;</span>
-                <p id="pokemon-details">Details will be displayed here...</p>
-            </div>
-        </div>
     {% elif pokemon_index != -1 %}
         <!-- Display pokemon sprite by searched pokemon -->
         <img src="{{ pokemon_sprites_cache[pokemon_index].url }}" alt="Pokemon Sprite" class="clickable-sprite" data-pokemon-id="{{ pokemon_sprites_cache[pokemon_index].sprite_id }}">
-
-        <div id="pokemon-modal" class="modal">
-            <div class="modal-content">
-                <span class="close">&times;</span>
-                <p id="pokemon-details">Details will be displayed here...</p>
-            </div>
-        </div>
     {% else %}
         <!-- Display pokemon sprites in the page -->
         {% for sprite in pokemon_sprites_cache[i:i+limit] %}
         <img src="{{ sprite.url }}" alt="Pokemon Sprite" class="clickable-sprite" data-pokemon-id="{{ sprite.sprite_id }}" id="pokemon-{{ sprite.sprite_id }}">
         {% endfor %}
-
-        <div id="pokemon-modal" class="modal">
-            <div class="modal-content">
-                <span class="close">&times;</span>
-                <p id="pokemon-details">Details will be displayed here...</p>
-            </div>
-        </div>
     {% endif %}
+
+    <!-- Modal structure -->
+    <div id="pokemon-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p id="pokemon-details">Details will be displayed here...</p>
+        </div>
+    </div>
 
     <p></p>
 

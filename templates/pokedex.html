@@ -9,15 +9,6 @@
     Shows one pokemon with all its info at a time (paging)
     <p></p>
 
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            <div class="alert alert-danger" role="alert">
-            {% for message in messages %}
-                {{ message }}
-            {% endfor %}
-            </div>
-        {% endif %}
-    {% endwith %}
     
     <img src="{{ pokemon_sprites_cache[i].url }}" alt="Pokemon Sprite"> <p></p>
 
