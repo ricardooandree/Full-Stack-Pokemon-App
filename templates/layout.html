@@ -11,11 +11,17 @@
     <!-- CSS stylesheet -->
     <link href="/static/styles.css" rel="stylesheet">
     
-    <!-- Page Icon -->
-    <link rel="icon" href="C:\Users\ricar\projects\cs50-final-project\static\pokeball-icon.png" type="image/png">
+    <!-- CSS Block -->
+    {% block style %}{% endblock %}
 
-    
-    <title>Homepage</title>
+    <!-- Script Block -->
+    {% block script %}{% endblock %}
+
+    <!-- Page Icon -->
+    <link rel="icon" href="{{ url_for('static', filename='pokeball-icon.png') }}" type="image/png">
+
+    <!-- Page Title -->    
+    <title>{% block title %}{% endblock %}</title>
 
 </head>
 <body>
@@ -46,7 +52,7 @@
                             <a class="nav-link mx-lg-2" href="/pokedex">Pokedex</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link mx-lg-2" href="/party-selector">Party Selector</a>
+                            <a class="nav-link mx-lg-2" href="/party">Party</a>
                         </li>
                     </ul>
                     <ul class="navbar-nav justify-content-right">
@@ -80,7 +86,17 @@
         </div>
       </nav>
 
+      
     <main class="container py-5 text-center">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="alert alert-danger" role="alert">
+                {% for message in messages %}
+                    {{ message }}
+                {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
         {% block main %}{% endblock %}
     </main>
 

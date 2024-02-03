@@ -9,22 +9,13 @@
     Shows one pokemon with all its info at a time (paging)
     <p></p>
 
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            <div class="alert alert-danger" role="alert">
-            {% for message in messages %}
-                {{ message }}
-            {% endfor %}
-            </div>
-        {% endif %}
-    {% endwith %}
     
     <img src="{{ pokemon_sprites_cache[i].url }}" alt="Pokemon Sprite"> <p></p>
 
     ID: {{ pokemon_data.id }} <p></p>
     Name: {{ pokemon_data.name }} <p></p>
     Height: {{ pokemon_data.height }} <p></p>
-    Weigth: {{ pokemon_data.weight }} <p></p>
+    Weight: {{ pokemon_data.weight }} <p></p>
 
     Types: {{ pokemon_data.types }},
     
@@ -37,14 +28,6 @@
     Stats: {{ pokemon_data.stats }} 
 
     <p></p>
-
-    <form action="/pokedex" method="post">
-        <!-- Hidden input field to indicate the action -->
-        <input type="hidden" name="action" value="previous">
-
-        <!-- Previous button -->
-        <button class="btn btn-primary" type="submit">Previous</button>
-    </form>
     
     <form action="/pokedex" method="post">
         <input type="hidden" name="action" value="search">
@@ -54,6 +37,14 @@
 
     <form action="/pokedex" method="post">
         <!-- Hidden input field to indicate the action -->
+        <input type="hidden" name="action" value="previous">
+
+        <!-- Previous button -->
+        <button class="btn btn-primary" type="submit">Previous</button>
+    </form>
+    <p></p>
+    <form action="/pokedex" method="post">
+        <!-- Hidden input field to indicate the action -->
         <input type="hidden" name="action" value="next">
 
         <!-- Next button -->
@@ -61,3 +52,4 @@
     </form>
 
 {% endblock %}
+
