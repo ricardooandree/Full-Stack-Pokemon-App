@@ -14,8 +14,18 @@
     Select pokemons for your party, favorite pokemons, etc.
     <p></p>
 
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="alert alert-danger" role="alert">
+            {% for message in messages %}
+                {{ message }}
+            {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+    
     <!-- Search bar -->
-    <form action="/party" method="POST" class="d-flex align-items-center justify-content-center">
+    <form id="pokemonForm" action="/party" method="POST" class="d-flex align-items-center justify-content-center">
         <!-- ID -->
         <input autocomplete="off" class="form-control w-auto" name="pokemon_id" placeholder="ID" type="number" min="1" max="493">
         
@@ -44,35 +54,59 @@
             <option value="steel">Steel</option>
             <option value="fairy">Fairy</option>
         </select>
-
-        <!-- Stat -->
-        <select id="stat" name="pokemon_stat" class="form-control mx-2 w-auto">
-            <option value="" disabled selected hidden>Stat</option>
-            <option value="hp">HP</option>
-            <option value="attack">Attack</option>
-            <option value="defense">Defense</option>
-            <option value="spattack">Sp. Attack</option>
-            <option value="spdefense">Sp. Defense</option>
-            <option value="speed">Speed</option>
-        </select>
         
         <!-- Search Button -->
-        <button class="btn btn-primary" type="submit" name="action" value="search">Search</button>
+        <button class="btn btn-primary mx-2 w-auto" type="submit" name="action" value="search">Search</button>
     </form>
     
     <p></p>
-    
-    <!-- Sprites display -->
-    {% for sprite in pokemon_sprites_cache[i:i+12] %}
-        <img src="{{ sprite.url }}" alt="Pokemon Sprite" class="clickable-sprite" data-pokemon-id="{{ sprite.id }}">
+
+    <!-- Empty Party Containers -->
+    {% for _ in range(6) %}
+        <img src="{{ pokemon_sprites_cache[131].url }}" alt="Pokemon Sprite" class="clickable-sprite party-slot" data-pokemon-party-id="{{ pokemon_sprites_cache[131].sprite_id }}">
     {% endfor %}
 
-    <div id="pokemon-modal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <p id="pokemon-details">Details will be displayed here...</p>
+    <p></p>
+
+    <!-- Display Pokemon Sprites-->
+    {% if pokemon_type is not none and pokemon_type != "" %}
+        <!-- Display pokemon sprites by searched type -->
+        {% for index in i_type %}
+            {% if index < 493 %}
+                {% set sprite = pokemon_sprites_cache[index] %}
+                <img src="{{ sprite.url }}" alt="Pokemon Sprite" class="clickable-sprite" data-pokemon-id="{{ sprite.sprite_id }}">
+            {% endif %}
+        {% endfor %}
+
+        <div id="pokemon-modal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <p id="pokemon-details">Details will be displayed here...</p>
+            </div>
         </div>
-    </div>
+    {% elif pokemon_index != -1 %}
+        <!-- Display pokemon sprite by searched pokemon -->
+        <img src="{{ pokemon_sprites_cache[pokemon_index].url }}" alt="Pokemon Sprite" class="clickable-sprite" data-pokemon-id="{{ pokemon_sprites_cache[pokemon_index].sprite_id }}">
+
+        <div id="pokemon-modal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <p id="pokemon-details">Details will be displayed here...</p>
+            </div>
+        </div>
+    {% else %}
+        <!-- Display pokemon sprites in the page -->
+        {% for sprite in pokemon_sprites_cache[i:i+limit] %}
+            <img src="{{ sprite.url }}" alt="Pokemon Sprite" class="clickable-sprite" data-pokemon-id="{{ sprite.sprite_id }}">
+        {% endfor %}
+
+        <div id="pokemon-modal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <p id="pokemon-details">Details will be displayed here...</p>
+            </div>
+        </div>
+    {% endif %}
 
     <p></p>
 
@@ -85,5 +119,6 @@
 
 {% block script %}
     <!-- JS script -->
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <script src="/static/party-script.js"></script>
 {% endblock %}
