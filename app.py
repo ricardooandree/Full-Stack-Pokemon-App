@@ -428,13 +428,6 @@ def about():
     return render_template("about.html")
 
 
-@app.route("/encyclopedia", methods = ["GET", "POST"])
-@login_required
-def encyclopedia():
-    # TODO:
-    return render_template("encyclopedia.html", pokemon_sprites_cache=pokemon_sprites_cache)
-
-
 @app.route("/pokedex", methods = ["GET", "POST"])
 @login_required
 def pokedex():
