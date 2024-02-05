@@ -14,7 +14,7 @@
     margin: 15% auto;
     padding: 20px;
     border: 1px solid #888;
-    width: 80%;
+    width: 25%;
 }
 
 .close {
@@ -58,7 +58,8 @@
     height: 96px; /* Set the height to the same value for both */
     border: 1px solid #ccc; /* Set the border style */
     border-radius: 5px; /* Add border-radius for rounded corners */
-    margin: 5px; /* Add margin to create space between containers */
+    margin: 10px; /* Add margin to create space between containers */
     display: inline-block; /* Ensure elements are displayed inline */
     vertical-align: middle; /* Align the elements vertically in the middle */
 }
+

@@ -36,10 +36,10 @@ document.addEventListener('DOMContentLoaded', () => {
     
                     if (imageId === 'party-sprite') {
                         buttonText = 'Remove from Party';
-                        buttonClass = 'btn btn-danger mx-2 w-auto remove-from-party-button';
+                        buttonClass = 'btn btn-danger mx-auto w-auto remove-from-party-button';
                     } else {
                         buttonText = 'Add to Party';
-                        buttonClass = 'btn btn-primary mx-2 w-auto add-to-party-button';
+                        buttonClass = 'btn btn-primary mx-auto w-auto add-to-party-button';
                     }
     
                     addButton.className = buttonClass;
