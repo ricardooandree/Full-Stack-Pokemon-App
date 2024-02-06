@@ -10,10 +10,7 @@
 {% endblock %}
 
 {% block main %}
-    <h1>PARTY SELECTOR</h1>
-    Select pokemons for your party, favorite pokemons, etc.
-    <p></p>
-
+<div class="container" style="padding-right: 10px; padding-left: 10px; padding-bottom: 100px; padding-top: 50px">
     <!-- Alert for adding pokemons to the party -->
     <div id="message-container"></div>
 
@@ -101,6 +98,7 @@
         <button class="btn btn-primary" type="submit" name="action" value="previous">Previous</button>
         <button class="btn btn-primary" type="submit" name="action" value="next">Next</button>
     </form>
+</div>
 {% endblock %}
 
 {% block script %}
