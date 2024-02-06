@@ -4,7 +4,127 @@
     Settings
 {% endblock %}
 
+{% block style %}
+<!-- CSS stylesheet -->
+<link href="/static/settings-styles.css" rel="stylesheet">
+{% endblock %}
+
 {% block main %}
-<h1>SETTINGS</h1>
-Change username, password, etc.
+<div class="container" style="padding-right: 10px; padding-left: 10px; padding-bottom: 100px; padding-top: 50px">
+    <!-- Change user's profile info -->
+    <h3>Profile Info</h3>
+    <hr>
+    <!-- User's profile image -->
+    <form action="/settings" method="POST" enctype="multipart/form-data">
+        <div class="input-group mb-3 mx-auto" style="width: 700px">
+            <input type="file" name='file' class="form-control w-auto" id="inputGroupFile04" aria-describedby="inputGroupFileAddon04" aria-label="Upload">
+            <button class="btn btn-outline-secondary" name="action" value="avatar" type="submit">Upload</button>
+        </div>
+    </form>
+    
+    <!-- User's info -->
+    <form action="/settings" method="POST">
+        <!-- Row 1 -->
+        <div class="row align-items-center justify-content-center mb-3">
+            <!-- Name -->
+            <div class="col-md-2">
+                <input autocomplete="off" class="form-control" name="name" placeholder="Name" type="text">
+            </div>
+
+            <!-- Age  -->
+            <div class="col-md-1">
+                <input autocomplete="off" class="form-control" name="age" placeholder="Age" type="number" min="12" max="100">
+            </div>
+
+            <!-- Gender -->
+            <div class="col-md-1">
+                <select name="gender" class="form-control">
+                    <option value="" disabled selected hidden>Gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Row 2 -->
+        <div class="row align-items-center justify-content-center mb-3">
+            <!-- Country -->
+            <div class="col-md-2">
+                <input autocomplete="off" class="form-control" name="country" placeholder="Country" type="text">
+            </div>
+
+            <!-- City -->
+            <div class="col-md-2">
+                <input autocomplete="off" class="form-control" name="city" placeholder="City" type="text">
+            </div>
+        </div>
+
+        <!-- Row 3 -->
+        <div class="row align-items-center justify-content-center mb-3">
+            <!-- Description -->
+            <div class="col-md-6">
+                <textarea  autocomplete="off" class="form-control" rows="3" name="description" placeholder="Profile Description - max 500 characters" type="text"></textarea>
+            </div>
+        </div>
+        
+        <!-- Row 4 -->
+        <div class="row align-items-center justify-content-center mb-3">
+            <!-- Confirm button -->
+            <div class="col-md-2">
+                <button class="btn btn-outline-secondary" name="action" value="info" type="submit">Submit Changes</button>
+            </div>
+        </div>
+    </form>   
+</div>
+
+
+<div class="container" style="padding-right: 10px; padding-left: 10px; padding-bottom: 100px">
+    <!-- Change user's credentials -->
+    <h3>Credentials</h3>
+    <hr>
+    <form action="/settings" method="POST">
+        <!-- Row 1 -->
+        <div class="row align-items-center justify-content-center mb-3">
+            <!-- Username -->
+            <div class="col-md-2">
+                <input autocomplete="off" class="form-control" name="username" placeholder="New Username" type="text">
+            </div>
+        </div>
+        
+        <!-- Row 2 -->
+        <div class="row align-items-center justify-content-center mb-3">
+            <!-- Password -->
+            <div class="col-md-2">
+                <input autocomplete="off" class="form-control mx-2 w-auto" name="password" placeholder="New Password" type="password">
+            </div>
+            <!-- Password confirmation -->
+            <div class="col-md-2">
+                <input autocomplete="off" class="form-control mx-2 w-auto" name="password_confirmation" placeholder="Password Confirmation" type="password">
+            </div>
+        </div>
+
+        <!-- Row 3 -->
+        <div class="row align-items-center justify-content-center mb-3">
+            <!-- Confirm button -->
+            <div class="col-md-2">
+                <button class="btn btn-outline-secondary" name="action" value="credentials" type="submit">Submit Changes</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    // Listen for clicks on submit changes for profile info and credentials
+    $('button[name="action"]').click(function () {
+        $('#pokemonForm').submit();
+    });
+</script>
+
+{% endblock %}
+
+{% block script %}
+<!-- JS script -->
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script src="/static/settings-script.js"></script>
 {% endblock %}

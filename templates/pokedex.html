@@ -5,11 +5,9 @@
 {% endblock %}
 
 {% block main %}
-    <h1>POKEDEX</h1>
-    Shows one pokemon with all its info at a time (paging)
-    <p></p>
+<div class="container" style="padding-right: 10px; padding-left: 10px; padding-bottom: 100px; padding-top: 50px">
+    <h1>Pokedex</h1>
 
-    
     <img src="{{ pokemon_sprites_cache[i].url }}" alt="Pokemon Sprite"> <p></p>
 
     ID: {{ pokemon_data.id }} <p></p>
@@ -17,15 +15,19 @@
     Height: {{ pokemon_data.height }} <p></p>
     Weight: {{ pokemon_data.weight }} <p></p>
 
-    Types: {{ pokemon_data.types }},
-    
+    Types: {% for type in pokemon_data.types %}{{ type }}{% if not loop.last %}, {% endif %}{% endfor %}
 
     <p></p>
 
-    Abilities: {{ pokemon_data.abilities }} 
+    Abilities: {% for ability in pokemon_data.abilities %}{{ ability }}{% if not loop.last %}, {% endif %}{% endfor %}
+
     <p></p>
 
-    Stats: {{ pokemon_data.stats }} 
+    Stats:
+    <p></p>
+    {% for stat in pokemon_data.stats %}
+        {{ stat.name }}: {{ stat.value }}<br>
+    {% endfor %}
 
     <p></p>
     
@@ -50,6 +52,6 @@
         <!-- Next button -->
         <button class="btn btn-primary" type="submit">Next</button>
     </form>
-
+</div>
 {% endblock %}
 

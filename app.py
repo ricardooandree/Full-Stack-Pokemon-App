@@ -6,15 +6,18 @@ import requests
 from flask import Flask, flash, redirect, render_template, request, session, jsonify
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
+from werkzeug.utils import secure_filename
 from datetime import datetime
 from functools import wraps
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.orm import relationship
+
 ##################################################################################################
-# FEATURE/PARTY-SELECTOR BRANCH
+UPLOAD_FOLDER = 'static/uploads/'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 ##################################################################################################
 # Application configuration
 app = Flask(__name__)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # TODO: Security configuration
 #from flask_talisman import Talisman
@@ -35,6 +38,8 @@ class Users(db.Model):
     # Define the one-to-many relationship with PartyPokemon
     party_pokemons = db.relationship('PartyPokemon', backref='user', lazy=True)
 
+    # Define the one-to-one relationship with UsersInfo
+    user_info = db.relationship('UsersInfo', back_populates='user', uselist=False, lazy=True)
 
 class PartyPokemon(db.Model):
     __tablename__ = 'partypokemon'
@@ -43,6 +48,23 @@ class PartyPokemon(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     pokemon_id = db.Column(db.Integer, nullable=False)
     pokemon_name = db.Column(db.String(80), nullable=False)
+
+    
+class UsersInfo(db.Model):
+    __tablename__ = 'user_info'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    image_path = db.Column(db.String(255), nullable=True, default='DefaultValue')
+    name = db.Column(db.String(60), nullable=True, default='DefaultValue')
+    age = db.Column(db.Integer, nullable=True, default='DefaultValue')
+    gender = db.Column(db.String(20), nullable=True, default='DefaultValue')
+    country = db.Column(db.String(60), nullable=True, default='DefaultValue')
+    city = db.Column(db.String(60), nullable=True, default='DefaultValue')
+    join_date = db.Column(db.DateTime, nullable=True, default='DefaultValue')
+    description = db.Column(db.Text, nullable=True, default='DefaultValue')
+
+    user = db.relationship('Users', back_populates='user_info', lazy=True)
 
 
 # Configure session to use filesystem (instead of signed cookies)
@@ -233,6 +255,23 @@ def fetch_pokemon_by_name(pokemon_name):
     return fetch_pokemon_data(base_url)
 
 
+# Fetch user's party pokemon indexes
+def fetch_user_party_pokemon_indexes(user_id):
+    # Fetch pokemon IDs in the user's party from the database
+    user_party_pokemons = PartyPokemon.query.filter_by(user_id=user_id).with_entities(PartyPokemon.pokemon_id).all()
+
+    # Extract the pokemon IDs from the result set
+    user_party_pokemon_ids = [pokemon_id for (pokemon_id,) in user_party_pokemons]
+    
+    # Transform the user pokemon IDs into sprite indexes
+    user_party_indexes = []
+    
+    for id in user_party_pokemon_ids:
+        user_party_indexes.append(id - 1)
+        
+    return user_party_indexes
+        
+        
 # Checks if pokemon name exists
 def pokemon_name_exists(pokemon_name):
     # Check if data is already cached
@@ -259,13 +298,6 @@ precache_pokemon_names()
 
 # Pre-cache the first batch of 24 pokemons
 fetch_pokemon_by_id(1)
-#print(pokemon_data_cache[0])
-#print()
-#batch_fetch_pokemon(12, 0)
-#batch_fetch_pokemon(2)
-#fetch_pokemon_by_id(1)
-#print(pokemon_data_cache[0])
-
 
 
 ##################################################################################################
@@ -294,18 +326,28 @@ def login_required(f):
 #    return render_template('404.html'), 404
 
 
-##################################################################################################
-@app.route("/")
+@app.route("/", methods = ["GET"])
 @login_required
 def dashboard():
-    user = Users.query.filter_by(username="ricardo").first()
-    #new_partypokemon = PartyPokemon(user_id=user.id, pokemon_id=1, pokemon_name="Bulbasaur")
-    #db.session.add(new_partypokemon)
-    #db.session.commit()
-    #new_partypokemon = PartyPokemon(user_id=user.id, pokemon_id=149, pokemon_name="dragonite")
-    #db.session.add(new_partypokemon)
-    #db.session.commit()
-    return render_template("dashboard.html")
+    # Fetch user's party pokemon indexes
+    user_party_indexes = fetch_user_party_pokemon_indexes(session["user_id"])
+    
+    # Get user_info object
+    user_info = UsersInfo.query.filter_by(user_id=session["user_id"]).first()
+    
+    # Get user object
+    user = Users.query.filter_by(id=session["user_id"]).first()
+    
+    # Get user username
+    username = user.username
+    
+    # Convert string to datetime object
+    datetime_obj = datetime.strptime(str(user_info.join_date), "%Y-%m-%d %H:%M:%S.%f")
+
+    # Format datetime object
+    date = datetime_obj.strftime("%b %d, %Y")
+    
+    return render_template("dashboard.html", date=date, username=username, user_info=user_info, user_party_indexes=user_party_indexes, pokemon_sprites_cache=pokemon_sprites_cache)
 
 
 @app.route("/login", methods = ["GET", "POST"])
@@ -394,8 +436,8 @@ def register():
             flash("Username is taken", "error")
             return render_template("register.html")
         
-        # Ensure password has at least 8 characters
-        if len(password) < 8:
+        # Ensure password has at least 8 characters FIXME:
+        if len(password) < 1:
             flash("Password must be at least 8 characters long", "error")
             return render_template("register.html")
         
@@ -409,6 +451,11 @@ def register():
         db.session.add(new_user)
         db.session.commit()
 
+        # Add new entry of user_info to database
+        user_info = UsersInfo(user_id=new_user.id, join_date=datetime.now())
+        db.session.add(user_info)
+        db.session.commit()
+        
         # Log in the new user
         session["user_id"] = new_user.id
         
@@ -421,7 +468,6 @@ def register():
         return render_template("register.html")
 
 
-##################################################################################################
 @app.route("/about")
 def about():
     # TODO:
@@ -579,16 +625,19 @@ def party():
     limit = 44
     
     # Fetch pokemon IDs in the user's party from the database
-    user_party_pokemons = PartyPokemon.query.filter_by(user_id=session["user_id"]).with_entities(PartyPokemon.pokemon_id).all()
+    #user_party_pokemons = PartyPokemon.query.filter_by(user_id=session["user_id"]).with_entities(PartyPokemon.pokemon_id).all()
 
     # Extract the pokemon IDs from the result set
-    user_party_pokemon_ids = [pokemon_id for (pokemon_id,) in user_party_pokemons]
+    #user_party_pokemon_ids = [pokemon_id for (pokemon_id,) in user_party_pokemons]
     
     # Transform the user pokemon IDs into sprite indexes
-    user_party_indexes = []
-    for id in user_party_pokemon_ids:
-        user_party_indexes.append(id - 1)
-
+    #user_party_indexes = []
+    #for id in user_party_pokemon_ids:
+    #    user_party_indexes.append(id - 1)
+    
+    # Fetch user's party pokemon indexes
+    user_party_indexes = fetch_user_party_pokemon_indexes(session["user_id"])
+    
     # Initialize i in the session if it's not set
     if "i_party" not in session:
         session["i_party"] = 0
@@ -670,11 +719,180 @@ def party():
     return render_template("party.html", pokemon_index=pokemon_index, pokemon_type=pokemon_type, i=offset, limit=limit, pokemon_sprites_cache=pokemon_sprites_cache, user_party_indexes=user_party_indexes)
 
 
+def validate_settings_parameters(name, age, gender, country, city, description):
+    if not name and not age and not gender and not country and not city and not description:
+        flash("Please input any info", "error")
+        return False
+    
+    if len(name) > 25:
+        print(len(name))
+        flash("Name is too long, 25 characters max please", "error")
+        return False
+
+    if len(country) > 25:
+        flash("Country name is too long, 25 characters max please", "error")
+        return False
+
+    if len(city) > 25:
+        flash("City name is too long, 25 characters max please", "error")
+        return False
+
+    if len(description) > 500:
+        flash("Description is too long, 500 characters max please", "error")
+        return False
+    
+    return True
+    
+    
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+           
+           
 @app.route("/settings", methods = ["GET", "POST"])
 @login_required
 def settings():
     # TODO:
-    return render_template("settings.html")
+    
+    # User reached route via POST
+    if request.method == "POST":
+        action = request.form["action"]
+        
+        if action == "avatar":
+            # Check if the post request has the file part
+            if 'file' not in request.files:
+                flash("No file part", "error")
+                return redirect("settings.html")
+            
+            # Get the file 
+            file = request.files['file']
+            
+            # If no file selected
+            if file.filename == '':
+                flash("No selected file", "error")
+                return redirect("settings.html")
+            
+            if file and allowed_file(file.filename):
+                # Generate a unique filename
+                filename = secure_filename(file.filename)
+                filename = str(session["user_id"]) + "_" + filename  # Example: 123_avatar.png
+
+                # Save the file to the specified folder
+                file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                file.save(file_path)
+            
+                # Update the user_info table with the file path or filename
+                user_info = UsersInfo.query.filter_by(user_id=session["user_id"]).first()
+                
+                if user_info is not None:
+                    user_info.image_path = file_path
+                    db.session.commit()
+                    
+                flash("Avatar successfully uploaded", "success")
+                return redirect("/")
+            else:
+                flash("File type not allowed, allowed types: png, jpg, jpeg", "error")
+                return render_template("settings.html")
+                    
+        elif action == "info":
+            # Get user_info object
+            user_info = UsersInfo.query.filter_by(user_id=session["user_id"]).first()
+            
+            # Get input form data
+            name = request.form.get("name")
+            age = request.form.get("age")
+            gender = request.form.get("gender")
+            country = request.form.get("country")
+            city = request.form.get("city")
+            description = request.form.get("description")
+            
+            # Input validation
+            valid = validate_settings_parameters(name, age, gender, country, city, description)
+            
+            if not valid:
+                return render_template("settings.html")
+            
+            # Update the user_info table
+            if name:
+                user_info.name = name
+            
+            if age:
+                user_info.age = age
+                
+            if gender:
+                user_info.gender = gender
+                
+            if country:
+                user_info.country = country
+                
+            if city:
+                user_info.city = city
+            
+            if description:
+                user_info.description = description
+                
+            # Commit the changes to the database
+            db.session.commit()
+        
+        elif action == "credentials":
+            # Get user object
+            user = Users.query.filter_by(id=session["user_id"]).first()
+            
+            username = request.form.get("username")
+            password = request.form.get("password")
+            password_confirmation = request.form.get("password_confirmation")
+            
+            # Input validation
+            if not username and not password and not password_confirmation:
+                flash("Please input any info", "error")
+                return render_template("settings.html")
+            
+            # User wants to change username
+            if username:
+                exisiting_user = Users.query.filter_by(username=username).first()
+                if exisiting_user:
+                    flash("Username already exists", "error")
+                    return render_template("settings.html")
+                   
+                # Update user's username 
+                user.username = username
+                
+                # Commit the changes to the database
+                db.session.commit()
+        
+            # User wants to change password
+            if password:
+                if password_confirmation:
+                    if password != password_confirmation:
+                        flash("Passwords don't match", "error")
+                        return render_template("settings.html")
+
+                    # Ensure password has at least 8 characters
+                    if len(password) < 1:
+                        flash("Password must be at least 8 characters long", "error")
+                        return render_template("settings.html")
+                    
+                    # Update user's password with hash
+                    user.password = generate_password_hash(password)
+                    
+                    # Commit the changes to the database
+                    db.session.commit()
+                      
+                else:
+                    flash("Insert password confirmation", "error")
+                    return render_template("settings.html")
+                
+            # User only input password confirmation
+            elif password_confirmation:
+                flash("Insert password both fields of password", "error")
+                return render_template("settings.html")
+            
+        # Redirect to the main page
+        flash("Changes saved", "success")
+        return redirect("/") 
+    
+    else:
+        return render_template("settings.html")
 
 
 if __name__ == '__main__':
