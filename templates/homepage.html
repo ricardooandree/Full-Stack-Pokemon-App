@@ -4,17 +4,97 @@
     Homepage
 {% endblock %}
 
+{% block style %}
+    <!-- CSS stylesheet -->
+    <link href="/static/homepage.css" rel="stylesheet">
+{% endblock %}
+
 {% block main %}
+<!-- Banner section -->
+<section id="banner">
+    <div class="container">
+        <div class="row">
+            <!-- Text display -->
+            <div class="col-md-6">
+                <p class="promo-title">POKEMON TEAM BUILDER</p>
+                <p>Craft your ultimate Pokemon team, showcase your favorite Pokemons, costumize your profile and much more</p>
+                <p>Don't waste any time. Your Pokemon Trainer journey starts now!</p>
+                <p></p>
+                <a href="https://pokeapi.co/"><img class="icon" src="static/logo3.png"></a>
+                <a href="https://github.com/ricardooandree"><img class="icon" src="static/github.png"></a>
+            </div>
 
-    <form action="/login" method="post">
-        <div class="mb-3">
-            <input autocomplete="off" autofocus class="form-control mx-auto w-auto" name="username" placeholder="Username" type="text">
+            <!-- Spacing -->
+            <div class="col-md-2 d-flex justify-content-center align-items-center"></div>
+
+            <!-- Login form display -->
+            <div class="col-md-4 d-flex justify-content-center align-items-center" id="login-form">
+                <div class="login-container d-flex justify-content-center align-items-center">
+                    <form action="/login" method="post">
+                        <div class="mb-3">
+                            <input autocomplete="off" class="form-control w-auto" name="username" placeholder="Username" type="text">
+                        </div>
+                        <div class="mb-3">
+                            <input class="form-control w-auto" name="password" placeholder="Password" type="password">
+                        </div>
+                        <div class="mb-3 d-flex justify-content-center align-items-center">
+                            <button class="btn btn-outline-light" type="submit">Log In</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
-        <div class="mb-3">
-            <input class="form-control mx-auto w-auto" name="password" placeholder="Password" type="password">
+    </div> 
+    <img class="bottom-img" src="static/wave-top.svg">
+</section>
+
+<!-- About section -->
+<section id="about">
+    <div class="container-custom">
+        <div class="row justify-content-center align-items-center">
+            <!-- Left blob with text -->
+            <div id="about-section" class="col-md-4 position-relative">
+                <img class="blob1" src="static/blob1.svg">
+                <div class="text-overlay" style="left: 45%; width: 370px">
+                    <p class="promo-title" style="margin-left: 7.5%">About the project</p>
+                    <hr>
+                    <p>This website is tailored for Pokemon enthusiasts who enjoy creating their own Pokemon party.</p>
+                    <p>It features a user profile, where you can showcase your Pokemon and personal information, as well as a comprehensive Pokedex and Pokemon encyclopedia, allowing you to select your desired Pokemon for your own team.</p>
+                </div>
+            </div>
+            <!-- Spacing -->
+            <div class="col-md-1"></div>
+            
+            <!-- Right blob with text -->
+            <div id="about-section" class="col-md-4 position-relative">
+                <img class="blob2" src="static/blob2.svg">
+                <div class="text-overlay" style="left: 53%; width: 350px">
+                    <p class="promo-title"  style="margin-left: 25%">About me</p>
+                    <hr>
+                    <p>I'm Ricardo Silva, an aspiring software developer.</p>
+                    <p>Presently, I'm pursuing a dual major in electrical engineering and computer science, while independently studying web development.</p>
+                    <p>My main area of interest is back-end development.</p></p>
+                </div>
+            </div>
         </div>
-        <button class="btn btn-primary" type="submit">Log In</button>
-    </form>
+    </div>
+</section>
 
+<!-- Footer section -->
+<section id="footer">
+    <img class="bottom-img" src="static/wave-bottom.svg">
+    <div class="container">
+        <div class="row justify-content-center align-items-center">
+            <div class="col-md-8 text-center" style="margin-top: 20px">
+                <p>This website is a non-commercial project created for educational purposes and all content used in this project is for demonstration only and falls under fair use policies.</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <p>&copy; 2024 Ricardo Silva. All rights reserved.</p>
+            </div>
+        </div>
 
+    </div>
+</section>
 {% endblock %}

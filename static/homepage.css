@@ -1,0 +1,122 @@
+/*--------------------- BANNER SECTION ---------------------*/
+#banner
+{
+    background-image: linear-gradient(to right, #003976, #00264f);
+    color: #fff;
+    padding-top: 5%;
+}
+
+.col-md-6
+{
+    margin-top: 75px;
+}
+
+.col-md-4
+{
+    margin-top: 75px;
+}
+
+.promo-title
+{
+    font-size: 40px;
+    font-weight: 600;
+}
+
+.icon
+{
+    width: 50px;
+    height: 50px;
+    margin-right: 20px;
+}
+
+.bottom-img
+{
+    width: 100%;
+    bottom: 0;
+}
+
+.login-container {
+    background-color: transparent;
+    padding: 20px; /* Add some padding for spacing */
+    border-radius: 10px; /* Optionally add rounded corners */
+    width: 350px; /* Set a fixed width */
+}
+
+.form-control
+{
+    background-color: rgba(255, 255, 255, 0.5); /* Semi-transparent white background for input */
+    border-color: transparent; /* Transparent border */
+    color: #00264f; /* Dark blue text color */
+    margin-bottom: 15px; /* Add some bottom margin between input fields */
+}
+
+.form-control:focus {
+    background-color: rgba(255, 255, 255, 0.7); /* Lighter semi-transparent white background on focus */
+    border-color: transparent; /* Transparent border on focus */
+    box-shadow: none; /* Remove default box-shadow on focus */
+    color: #00264f;
+}
+
+.form-control::placeholder {
+    color: #fcfcfc; /* Customize the placeholder text color */
+}
+
+/*--------------------- ABOUT SECTION ---------------------*/
+#about
+{
+    background: #F4F4F4;
+    color: #000;
+}
+
+.blob1,
+.blob2 {
+    width: 100%;
+    height: auto;
+    max-width: 100%; /* Allow the blobs to adjust their width */
+}
+
+.text-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 20px;
+    width: 80%; /* Limit the maximum width of the text overlay */
+    max-width: 100%; /* Ensure the text overlay remains responsive */
+}
+
+/* Custom container */
+.container-custom {
+    width: 1900px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+#about-section{
+    max-width: 700px; /* Set the maximum width of col-md-4 divs */
+    width: 100%; /* Ensure col-md-4 divs take up full width */
+}
+
+@media (max-width: 1919px) {
+    .container-custom {
+        width: 100%;
+    }
+}
+
+
+
+/*--------------------- FOOTER SECTION ---------------------*/
+#footer
+{
+    background-image: linear-gradient(to right, #003976, #00264f);
+    color: #fff;
+    padding-top: 0;
+}
+
+#text-footer
+{
+    
+}
