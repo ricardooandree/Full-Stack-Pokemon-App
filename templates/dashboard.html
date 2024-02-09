@@ -6,105 +6,105 @@
 
 {% block style %}
 <!-- CSS stylesheet -->
-<link href="/static/dashboard-styles.css" rel="stylesheet">
+<link href="/static/dashboard.css" rel="stylesheet">
 <link href="/static/party-styles.css" rel="stylesheet">
 {% endblock %}
 
 {% block main %}
-<div class="container" style="padding-top: 50px">
-    <div class="row">
-        <!-- Left Column: Profile Details -->
-        <div class="col-md-4">
-            <div class="container">
-                <!-- Profile Image -->
-                {% if user_info.image_path == "DefaultValue" %}
-                    <img src="static/default-profile-image.jpg" alt="Profile Image" class="img-fluid">
-                {% else %}
-                    <img src="{{ user_info.image_path}}" alt="Profile Image" class="img-fluid">
-                {% endif %}
-
-                <!-- User's name -->
-                {% if user_info.name == "DefaultValue" %}
-                    <h2>Name</h2>
-                {% else %}
-                    <h2>{{ user_info.name }}</h2>
-                {% endif %}
-                <hr>
-
-                <!-- User's username -->
-                <p>@{{ username }}</p>
-
-                <!-- User's age -->
-                {% if user_info.age == "DefaultValue" %}
-                    <p>Age: Unknown</p>
-                {% else %}
-                    <p>Age: {{ user_info.age }}</p>
-                {% endif %}
-
-                <!-- User's gender -->
-                {% if user_info.gender == "DefaultValue" %}
-                    <p>Gender: Unknown</p>
-                {% else %}
-                    <p>Gender: {{ user_info.gender }}</p>
-                {% endif %}
-                
-                <!-- User's location -->
-                {% if user_info.country == "DefaultValue" and user_info.city == "DefaultValue" %}
-                    <p>Location: Unkown</p>
-                {% elif user_info.country != "DefaultValue" and user_info.city == "DefaultValue" %}
-                    <p>Location: {{ user_info.country }}</p>
-                {% elif user_info.country == "DefaultValue" and user_info.city != "DefaultValue" %}
-                    <p>Location: {{ user_info.city }}</p>
-                {% else %}
-                    <p>Location: {{ user_info.country }}, {{user_info.city}}</p>
-                {% endif %}
-
-                <!-- User's join date -->
-                <p>Joined in: {{ date }}</p>
-            </div>
-        </div>
-
-        <!-- Right Column: Description, Party, etc. -->
-        <div class="col-md-8">
-            <div class="container" style="padding-bottom: 75px">
-                <!-- User's profile description -->
-                <h3>Description</h3>
-                <hr>
-                {% if user_info.description == "DefaultValue" %}
-                    <p>No description</p>
-                {% else %}
-                    <p>{{ user_info.description }}</p>
-                {% endif %}
-            </div>
-            <div class="container" style="padding-bottom: 75px">
-                <!-- User's Party -->
-                <h3>Party</h3>
-                <hr>
-                {% for i in range(6) %}
-                    {% if i < user_party_indexes|length %}
-                        <!-- Display party pokemon sprites-->
-                        <img id="party-sprite" src="{{ pokemon_sprites_cache[user_party_indexes[i]].url }}" alt="Pokemon Sprite" class="clickable-sprite party-slot" data-pokemon-id="{{ pokemon_sprites_cache[user_party_indexes[i]].sprite_id }}">
+<section id="dashboard">
+    <div class="container" style="padding-top: 150px">
+        <div class="row">
+            <!-- Left Column: Profile Details -->
+            <div class="col-md-4 text-center" style="height: 100%">
+                <div class="left-column">
+                    <!-- Profile Image -->
+                    {% if user_info.image_path == "DefaultValue" %}
+                        <img src="static/default-profile-image.jpg" alt="Profile Image" class="img-fluid">
                     {% else %}
-                    <!-- Display empty party container -->
-                        <div class="empty-sprite-container"></div>
+                        <img src="{{ user_info.image_path}}" alt="Profile Image" class="img-fluid">
                     {% endif %}
-                {% endfor %}
+
+                    <!-- User's name -->
+                    {% if user_info.name == "DefaultValue" %}
+                        <h2>Name</h2>
+                    {% else %}
+                        <h2>{{ user_info.name }}</h2>
+                    {% endif %}
+                    <hr>
+
+                    <!-- User's username -->
+                    <p>@{{ username }}</p>
+
+                    <!-- User's age -->
+                    {% if user_info.age == "DefaultValue" %}
+                        <p>Age: Unknown</p>
+                    {% else %}
+                        <p>Age: {{ user_info.age }}</p>
+                    {% endif %}
+
+                    <!-- User's gender -->
+                    {% if user_info.gender == "DefaultValue" %}
+                        <p>Gender: Unknown</p>
+                    {% else %}
+                        <p>Gender: {{ user_info.gender }}</p>
+                    {% endif %}
+                    
+                    <!-- User's location -->
+                    {% if user_info.country == "DefaultValue" and user_info.city == "DefaultValue" %}
+                        <p>Location: Unkown</p>
+                    {% elif user_info.country != "DefaultValue" and user_info.city == "DefaultValue" %}
+                        <p>Location: {{ user_info.country }}</p>
+                    {% elif user_info.country == "DefaultValue" and user_info.city != "DefaultValue" %}
+                        <p>Location: {{ user_info.city }}</p>
+                    {% else %}
+                        <p>Location: {{ user_info.country }}, {{user_info.city}}</p>
+                    {% endif %}
+
+                    <!-- User's join date -->
+                    <p>Joined in: {{ date }}</p>
+                </div>
             </div>
-            <div class="container" style="padding-bottom: 75px">
-                <!-- User's badges -->
-                <h3>Badges</h3>
-                <hr>
-                <p>To be implemented</p>
+            <!-- Right Column: Description, Party, etc. -->
+            <div class="col-md-8 text-center">
+                <div class="container" style="padding-bottom: 75px">
+                    <!-- User's profile description -->
+                    <h3>Description</h3>
+                    <hr>
+                    {% if user_info.description == "DefaultValue" %}
+                        <p>No description</p>
+                    {% else %}
+                        <p>{{ user_info.description }}</p>
+                    {% endif %}
+                </div>
+                <div class="container" style="padding-bottom: 75px">
+                    <!-- User's Party -->
+                    <h3>Party</h3>
+                    <hr>
+                    {% for i in range(6) %}
+                        {% if i < user_party_indexes|length %}
+                            <!-- Display party pokemon sprites-->
+                            <img id="party-sprite" src="{{ pokemon_sprites_cache[user_party_indexes[i]].url }}" alt="Pokemon Sprite" class="clickable-sprite party-slot" data-pokemon-id="{{ pokemon_sprites_cache[user_party_indexes[i]].sprite_id }}">
+                        {% else %}
+                        <!-- Display empty party container -->
+                            <div class="empty-sprite-container"></div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                <div class="container" style="padding-bottom: 75px">
+                    <!-- User's badges -->
+                    <h3>Badges</h3>
+                    <hr>
+                    <p>To be implemented</p>
+                </div>
             </div>
         </div>
     </div>
-</div>
-
+</section>
 
 {% endblock %}
 
 {% block script %}
 <!-- JS script -->
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-<script src="/static/dashboard-script.js"></script>
+<script src="/static/dashboard.js"></script>
 {% endblock %}

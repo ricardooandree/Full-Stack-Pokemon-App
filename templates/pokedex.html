@@ -4,54 +4,79 @@
     Pokedex
 {% endblock %}
 
-{% block main %}
-<div class="container" style="padding-right: 10px; padding-left: 10px; padding-bottom: 100px; padding-top: 50px">
-    <h1>Pokedex</h1>
-
-    <img src="{{ pokemon_sprites_cache[i].url }}" alt="Pokemon Sprite"> <p></p>
-
-    ID: {{ pokemon_data.id }} <p></p>
-    Name: {{ pokemon_data.name }} <p></p>
-    Height: {{ pokemon_data.height }} <p></p>
-    Weight: {{ pokemon_data.weight }} <p></p>
-
-    Types: {% for type in pokemon_data.types %}{{ type }}{% if not loop.last %}, {% endif %}{% endfor %}
-
-    <p></p>
-
-    Abilities: {% for ability in pokemon_data.abilities %}{{ ability }}{% if not loop.last %}, {% endif %}{% endfor %}
-
-    <p></p>
-
-    Stats:
-    <p></p>
-    {% for stat in pokemon_data.stats %}
-        {{ stat.name }}: {{ stat.value }}<br>
-    {% endfor %}
-
-    <p></p>
-    
-    <form action="/pokedex" method="post">
-        <input type="hidden" name="action" value="search">
-        <input name="pokemon_name" placeholder="Pokemon Name" type="text">
-        <button class="btn btn-primary" type="submit">Search</button>
-    </form>
-
-    <form action="/pokedex" method="post">
-        <!-- Hidden input field to indicate the action -->
-        <input type="hidden" name="action" value="previous">
-
-        <!-- Previous button -->
-        <button class="btn btn-primary" type="submit">Previous</button>
-    </form>
-    <p></p>
-    <form action="/pokedex" method="post">
-        <!-- Hidden input field to indicate the action -->
-        <input type="hidden" name="action" value="next">
-
-        <!-- Next button -->
-        <button class="btn btn-primary" type="submit">Next</button>
-    </form>
-</div>
+{% block style %}
+<!-- CSS stylesheet -->
+<link href="/static/pokedex.css" rel="stylesheet">
 {% endblock %}
 
+{% block main %}
+<section id="pokedex">
+    <div class="container text-center" style="padding-top: 80px">
+        <div class="row justify-content-center align-items-center">
+            <div class="col-md-8 position-relative" id="pokedex-section">
+                <!-- Blob Image -->
+                <img class="blob1" src="static/blob-pokedex.svg">
+
+                <div class="blob1-overlay" style="left: 47%">
+                    <!-- Pokemon Srptie -->
+                    <p><img src="{{ pokemon_sprites_cache[i].url }}" alt="Pokemon Sprite"></p>
+
+                    <section id="pokemon-info" style="color: #000;">
+                        <!-- Pokemon Information -->
+                        <p><strong>ID:</strong> {{ pokemon_data.id }}</p>
+                        <p><strong>Name:</strong> {{ pokemon_data.name }}</p>
+                        <p><strong>Height:</strong> {{ pokemon_data.height }}cm</p>
+                        <p><strong>Weight:</strong> {{ pokemon_data.weight }}g</p>
+                    
+                        <p><strong>Types:</strong> {% for type in pokemon_data.types %}{{ type }}{% if not loop.last %}, {% endif %}{% endfor %}</p>
+                    
+                        <p><strong>Abilities:</strong> {% for ability in pokemon_data.abilities %}{{ ability }}{% if not loop.last %}, {% endif %}{% endfor %}</p>
+                    
+                        <p></p>
+                        {% for stat in pokemon_data.stats %}
+                            <p><strong>{{ stat.name }}:</strong> {{ stat.value }}</p>
+                        {% endfor %}
+                    </section>
+                    
+                </div>
+            </div>
+        </div>
+        <div class="row justify-content-center align-items-center" style="margin-top: 40px">
+            <div class="col-md-8">
+                <div class="login-container d-flex justify-content-center align-items-center">
+                    <form id="pokemonForm" action="/pokedex" method="post">
+                        <!-- Hidden input field to indicate the action -->
+                        <input id="actionInput" type="hidden" name="action" value="search">
+
+                        <!-- Name Input and Search button -->
+                        <div class="input-group mb-3">
+                            <!-- Input Pokemon Name -->
+                            <input autocomplete="off" class="form-control border-light" name="pokemon_name" placeholder="Pokemon name" type="text" style="margin-bottom: 0px">
+                            <!-- Search button -->
+                            <button id="searchBtn" class="btn btn-outline-light" type="button">Search</button>
+                        </div>
+
+                        <!-- Previous and Next buttons -->
+                        <div class="mb-3">
+                            <!-- Previous button -->
+                            <button id="previousBtn" class="btn btn-outline-light" type="button" style="margin-right: 10px">Previous</button>
+                            <!-- Next button -->
+                            <button id="nextBtn" class="btn btn-outline-light" type="button">Next</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>        
+    </div>
+</section>
+
+<section id="footer">
+    <div class="container"></div>
+</section>
+{% endblock %}
+
+{% block script %}
+    <!-- JS script -->
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="/static/pokedex.js"></script>
+{% endblock %}

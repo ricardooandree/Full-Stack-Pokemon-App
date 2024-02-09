@@ -468,12 +468,6 @@ def register():
         return render_template("register.html")
 
 
-@app.route("/about")
-def about():
-    # TODO:
-    return render_template("about.html")
-
-
 @app.route("/pokedex", methods = ["GET", "POST"])
 @login_required
 def pokedex():
@@ -511,7 +505,8 @@ def pokedex():
                 flash("Pokemon name is empty", "error")
                 return render_template("pokedex.html", i=session["i_pokedex"] - 1, pokemon_sprites_cache=pokemon_sprites_cache, pokemon_data=pokemon_data)
             
-            elif not pokemon_name_exists(pokemon_name):
+            pokemon_name = pokemon_name.lower()
+            if not pokemon_name_exists(pokemon_name):
                 flash("Pokemon name doesn't exist", "error")
                 return render_template("pokedex.html", i=session["i_pokedex"] - 1, pokemon_sprites_cache=pokemon_sprites_cache, pokemon_data=pokemon_data)
             

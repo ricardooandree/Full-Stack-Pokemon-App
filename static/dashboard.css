@@ -1,0 +1,45 @@
+#dashboard 
+{
+    background-image: linear-gradient(to right, #003976, #00264f);
+    color: #fff;
+    min-height: 100vh;
+}
+
+.left-column {
+    position: relative; /* Ensure the pseudo-element is positioned relative to the container */
+    width: calc(100% - 3px); /* Adjust the width to your desired size */
+    background-color: #fff; /* White background color */
+    border-radius: 20px; /* Rounded corners */
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
+    padding: 17px; /* Adjust padding for content */
+    margin-right: 3px; /* Adjust margin to create spacing between columns */
+}
+
+.left-column h2 {
+    font-size: 24px; /* Larger font size for headings */
+    color: #333; /* Dark gray text color */
+    margin-bottom: 20px; /* Add some bottom margin below headings */
+}
+
+.left-column p {
+    font-size: 16px; /* Regular font size for paragraphs */
+    color: #666; /* Gray text color */
+    margin-bottom: 15px; /* Add some bottom margin below paragraphs */
+}
+
+.left-column hr {
+    color: #333; /* Dark gray text color */
+}
+
+/* Custom shadow effect */
+.left-column:before {
+    content: "";
+    position: absolute;
+    top: -10px;
+    left: 0;
+    right: 0;
+    bottom: -10px;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.5));
+    border-radius: 20px; /* Same as border-radius of the box */
+    z-index: -1; /* Behind the box */
+}

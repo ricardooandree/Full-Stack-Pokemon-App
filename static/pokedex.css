@@ -1,0 +1,48 @@
+#pokedex 
+{
+    background-image: linear-gradient(to right, #003976, #00264f);
+    color: #fff;
+    min-height: 100vh;
+}
+
+.blob1 {
+    width: 125%;
+    position: relative;
+    left: -15%;
+}
+
+.blob1-overlay
+{
+    position: absolute;
+    top: 50%;
+    left: 47%;
+    transform: translate(-50%, -50%);
+    width: 80%; /* Limit the maximum width of the text overlay */
+    max-width: 100%; /* Ensure the text overlay remains responsive */
+}
+
+.form-control
+{
+    background-color: rgba(255, 255, 255, 0.5); /* Semi-transparent white background for input */
+    border-color: transparent; /* Transparent border */
+    color: #00264f; /* Dark blue text color */
+    margin-bottom: 15px; /* Add some bottom margin between input fields */
+}
+
+.form-control:focus {
+    background-color: rgba(255, 255, 255, 0.7); /* Lighter semi-transparent white background on focus */
+    border-color: transparent; /* Transparent border on focus */
+    box-shadow: none; /* Remove default box-shadow on focus */
+    color: #00264f;
+}
+
+.form-control::placeholder {
+    color: #fcfcfc; /* Customize the placeholder text color */
+}
+
+#footer 
+{
+    background-image: linear-gradient(to right, #003976, #00264f);
+    color: #fff;
+    height: 100px;
+}
