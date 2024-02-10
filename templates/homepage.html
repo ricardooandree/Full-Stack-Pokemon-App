@@ -13,6 +13,8 @@
 <!-- Banner section -->
 <section id="banner">
     <div class="container">
+        <!-- Alert message box -->
+        <div id="message-container"></div>
         <div class="row">
             <!-- Text display -->
             <div class="col-md-6">
@@ -26,23 +28,46 @@
 
             <!-- Spacing -->
             <div class="col-md-2 d-flex justify-content-center align-items-center"></div>
-
-            <!-- Login form display -->
-            <div class="col-md-4 d-flex justify-content-center align-items-center" id="login-form">
-                <div class="login-container d-flex justify-content-center align-items-center">
-                    <form action="/login" method="post">
-                        <div class="mb-3">
-                            <input autocomplete="off" class="form-control w-auto" name="username" placeholder="Username" type="text">
-                        </div>
-                        <div class="mb-3">
-                            <input class="form-control w-auto" name="password" placeholder="Password" type="password">
-                        </div>
-                        <div class="mb-3 d-flex justify-content-center align-items-center">
-                            <button class="btn btn-outline-light" type="submit">Log In</button>
-                        </div>
-                    </form>
+            
+            {% if login %}
+                <!-- Login form display -->
+                <div class="col-md-4 d-flex justify-content-center align-items-center" id="login-form">
+                    <div class="login-container d-flex justify-content-center align-items-center">
+                        <form id="loginForm" action="/login" method="post">
+                            <div class="mb-3">
+                                <input autocomplete="off" id="usernameInput" class="form-control w-auto" name="username" placeholder="Username" type="text">
+                            </div>
+                            <div class="mb-3">
+                                <input id="passwordInput" class="form-control w-auto" name="password" placeholder="Password" type="password">
+                            </div>
+                            <div class="mb-3 d-flex justify-content-center align-items-center">
+                                <button id="loginBtn" class="btn btn-outline-light" type="submit">Log In</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
-            </div>
+            {% elif register %}
+                <!-- Register form display -->
+                <div class="col-md-4 d-flex justify-content-center align-items-center">
+                    <div class="login-container d-flex justify-content-center align-items-center">
+                        <form action="/register" method="post">
+                            <div class="mb-3">
+                                <input autocomplete="off" class="form-control w-auto" name="username" placeholder="Username" type="text">
+                            </div>
+                            <div class="mb-3">
+                                <input class="form-control w-auto" name="password" placeholder="Password" type="password">
+                            </div>
+                            <div class="mb-3">
+                                <input class="form-control w-auto" name="confirmation" placeholder="Password (again)" type="password">
+                            </div>
+                            <div class="mb-3 d-flex justify-content-center align-items-center">
+                                <button class="btn btn-outline-light" type="submit">Register</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            {% else %}
+            {% endif %}
         </div>
     </div> 
     <img class="bottom-img" src="static/wave-top.svg">
@@ -97,4 +122,14 @@
 
     </div>
 </section>
+
+{% endblock %}
+
+{% block script %}
+    <!-- JS script -->
+    <script>
+        // Store the error message in a JavaScript variable
+        let errorMessage = "{{ error_message }}" || null;
+    </script>
+    <script src="/static/homepage.js"></script>
 {% endblock %}

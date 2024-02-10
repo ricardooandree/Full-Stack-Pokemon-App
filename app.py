@@ -345,47 +345,40 @@ def dashboard():
     return render_template("dashboard.html", date=date, username=username, user_info=user_info, user_party_indexes=user_party_indexes, pokemon_sprites_cache=pokemon_sprites_cache)
 
 
-@app.route("/login", methods = ["GET", "POST"])
+@app.route("/login", methods=["GET", "POST"])
 def login():
     # Forget any user_id
     session.clear()
-    
+
+    # Define message variables
+    error_message = None
+
     # User reached route via POST
     if request.method == "POST":
         username = request.form.get("username")
         password = request.form.get("password")
-        
+
         # Input validation
-        if not username:
-            flash("Username is empty", "error")
-            return render_template("homepage.html")
-        
-        elif not password:
-            flash("Password is empty", "error")
-            return render_template("homepage.html")
-        
-        # Query database for user
-        existing_user = Users.query.filter_by(username=username).first()
-        
-        # Ensure username exists and password is correct
-        if not existing_user:
-            flash("User doesn't exist", "error")
-            return render_template("homepage.html")
-        
-        if not check_password_hash(existing_user.password, password):
-            flash("Incorrect password", "error")
-            return render_template("homepage.html")
-        
-        # Remember which user has logged in
-        session["user_id"] = existing_user.id
-        
-        # Redirect user to home page
-        flash("User has logged in", "success")
-        return redirect("/")
-    
-    # User reacher route via GET
-    else:
-        return render_template("homepage.html")
+        if not username or not password:
+            error_message = "Username and password are required"
+        else:
+            # Query database for user
+            existing_user = Users.query.filter_by(username=username).first()
+
+            # Ensure username exists and password is correct
+            if not existing_user:
+                error_message = "User doesn't exist"
+            elif not check_password_hash(existing_user.password, password):
+                error_message = "Incorrect password"
+            else:
+                # Remember which user has logged in
+                session["user_id"] = existing_user.id
+
+                # Redirect user to home page
+                return redirect("/")
+
+    # Render the login page with error message
+    return render_template("homepage.html", login=True, error_message=error_message)
 
 
 @app.route("/logout")
@@ -396,68 +389,61 @@ def logout():
     return redirect("/")
 
 
-@app.route("/register", methods = ["GET", "POST"])
+@app.route("/register", methods=["GET", "POST"])
 def register():
-    
+    # Forget any user_id
+    session.clear()
+
+    # Define message variables
+    error_message = None
+
     # User reached route via POST
     if request.method == "POST":
         username = request.form.get("username")
         password = request.form.get("password")
         confirmation = request.form.get("confirmation")
-        
+
         # Input validation
         if not username:
-            flash("Username is empty", "error")
-            return render_template("register.html")
-        
+            error_message = "Username is empty"
         elif not password:
-            flash("Password is empty", "error")
-            return render_template("register.html")
-        
+            error_message = "Password is empty"
         elif not confirmation:
-            flash("Password confirmation is empty", "error")
-            return render_template("register.html")
-        
+            error_message = "Password confirmation is empty"
         elif confirmation != password:
-            flash("Passwords do not match", "error")
-            return render_template("register.html")
-        
-        # Ensure username is available 
-        existing_user = Users.query.filter_by(username=username).first()
-        if existing_user:
-            flash("Username is taken", "error")
-            return render_template("register.html")
-        
-        # Ensure password has at least 8 characters FIXME:
-        if len(password) < 1:
-            flash("Password must be at least 8 characters long", "error")
-            return render_template("register.html")
-        
-        # TODO: Ensure password has at least 2 digits and 1 uppercase letter
-        #if not re.search(r'\d.*\d', password) or not any(char.isupper() for char in password):
-        #    flash("Password must have at least 2 digits and 1 uppercase letter", "error")
-        #    return render_template("register.html")
-        
-        # Insert user into database
-        new_user = Users(username=username, password=generate_password_hash(password))
-        db.session.add(new_user)
-        db.session.commit()
+            error_message = "Passwords do not match"
+        else:
+            # Ensure username is available
+            existing_user = Users.query.filter_by(username=username).first()
+            if existing_user:
+                error_message = "Username is taken"
+            else:
+                # Ensure password has at least 8 characters FIXME:
+                if len(password) < 1:
+                    error_message = "Password must be at least 8 characters long"
+                    # TODO: Ensure password has at least 2 digits and 1 uppercase letter
+                    #if not re.search(r'\d.*\d', password) or not any(char.isupper() for char in password):
+                    #    flash("Password must have at least 2 digits and 1 uppercase letter", "error")
+                    #    return render_template("register.html")
+                else:
+                    # Insert user into database
+                    new_user = Users(username=username, password=generate_password_hash(password))
+                    db.session.add(new_user)
+                    db.session.commit()
 
-        # Add new entry of user_info to database
-        user_info = UsersInfo(user_id=new_user.id, join_date=datetime.now())
-        db.session.add(user_info)
-        db.session.commit()
-        
-        # Log in the new user
-        session["user_id"] = new_user.id
-        
-        # Redirect user to home page 
-        flash("Registration successful", "success")
-        return redirect("/")
-    
-    # User reacher route via GET
-    else:
-        return render_template("register.html")
+                    # Add new entry of user_info to database
+                    user_info = UsersInfo(user_id=new_user.id, join_date=datetime.now())
+                    db.session.add(user_info)
+                    db.session.commit()
+
+                    # Log in the new user
+                    session["user_id"] = new_user.id
+
+                    # Redirect user to home page
+                    return redirect("/")
+
+    # Render the registration page with error message
+    return render_template("homepage.html", register=True, error_message=error_message)
 
 
 @app.route("/pokedex", methods = ["GET", "POST"])
