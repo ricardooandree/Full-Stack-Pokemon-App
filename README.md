@@ -1,1 +1,1 @@
-# cs50-final-project
+# Full-Stack Pokemon App
