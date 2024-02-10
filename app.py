@@ -5,6 +5,7 @@ import os
 import pokebase as pb
 import requests
 import secrets
+import tempfile
 
 from flask import Flask, redirect, render_template, request, session, jsonify
 from flask_session import Session
@@ -77,7 +78,16 @@ class UsersInfo(db.Model):
 
 
 # Set the Pokebase cache location
-pb.cache.set_cache('C:/Users/ricar/projects/cs50-final-project/.cache/pokebase')
+#pb.cache.set_cache('C:/Users/ricar/projects/cs50-final-project/.cache/pokebase')
+
+# Get the temporary directory path
+cache_directory = os.path.join(tempfile.gettempdir(), 'pokebase_cache')
+print(cache_directory)
+# Ensure the cache directory exists
+os.makedirs(cache_directory, exist_ok=True)
+
+# Set the Pokebase cache location
+pb.cache.set_cache(cache_directory)
 
 # Global cache for Pokemon sprites and data
 pokemon_sprites_cache = [pb.SpriteResource('pokemon', pokemon_id) for pokemon_id in range(1, 494)]
