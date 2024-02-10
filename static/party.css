@@ -1,3 +1,14 @@
+#party 
+{
+    background-image: linear-gradient(to right, #003976, #00264f);
+    color: #fff;
+}
+
+.wave
+{
+    width: 100%;
+}
+
 .modal {
     display: none;
     position: fixed;
@@ -36,7 +47,7 @@
     margin: 5px;
     cursor: pointer;
     transition: border-color 0.3s, background-color 0.3s; /* Add a smooth transition effect */
-
+    background-color: #002F61;
     /* Initial styles */
     border: 1px solid #ccc;
     border-radius: 5px;
@@ -63,3 +74,28 @@
     vertical-align: middle; /* Align the elements vertically in the middle */
 }
 
+.form-control
+{
+    background-color: rgba(255, 255, 255, 0.5); /* Semi-transparent white background for input */
+    border-color: transparent; /* Transparent border */
+    color: #00264f; /* Dark blue text color */
+    margin-bottom: 15px; /* Add some bottom margin between input fields */
+}
+
+.form-control:focus {
+    background-color: rgba(255, 255, 255, 0.7); /* Lighter semi-transparent white background on focus */
+    border-color: transparent; /* Transparent border on focus */
+    box-shadow: none; /* Remove default box-shadow on focus */
+    color: #00264f;
+}
+
+.form-control::placeholder {
+    color: #fcfcfc; /* Customize the placeholder text color */
+}
+
+#footer 
+{
+    background-image: linear-gradient(to right, #003976, #00264f);
+    color: #fff;
+    height: 100px;
+}

@@ -116,7 +116,6 @@ def fetch_pokemon_data(url):
             'types': types,
             'abilities': abilities,
             'stats': stats,
-            # TODO: Add more attributes
         }
         
         # Check if the name is already in the cache
@@ -125,10 +124,6 @@ def fetch_pokemon_data(url):
                 # Update existing entry
                 pokemon_data_cache[index] = pokemon_data
                 break
-        
-        # Append pokemon data to the global cache if not found
-        #else:
-            #pokemon_data_cache.append(pokemon_data)
         
         # Return the pokemon data
         return pokemon_data
@@ -296,7 +291,7 @@ def pokemon_id_exists(pokemon_id):
 # Pre-cache all pokemon names
 precache_pokemon_names()
 
-# Pre-cache the first batch of 24 pokemons
+# Pre-cache the first pokemon for the pokedex
 fetch_pokemon_by_id(1)
 
 
@@ -352,8 +347,6 @@ def dashboard():
 
 @app.route("/login", methods = ["GET", "POST"])
 def login():
-    """Log user in"""
-    
     # Forget any user_id
     session.clear()
     
@@ -405,7 +398,6 @@ def logout():
 
 @app.route("/register", methods = ["GET", "POST"])
 def register():
-    """Register a new user"""
     
     # User reached route via POST
     if request.method == "POST":
@@ -471,8 +463,6 @@ def register():
 @app.route("/pokedex", methods = ["GET", "POST"])
 @login_required
 def pokedex():
-    # TODO:
-    # FIXME: ONLY CHANGE: i -> i_pokedex 
     # Initialize i in the session if it's not set
     if "i_pokedex" not in session:
         session["i_pokedex"] = 1
@@ -576,7 +566,7 @@ def validate_search_parameters(pokemon_id, pokemon_name):
 
 
 def search_by_type(pokemon_type):
-    # Fetch pokemons with that type https://pokeapi.co/api/v2/type/10
+    # Fetch pokemons with that type
     pokemon_names_by_type = fetch_pokemon_by_type(pokemon_type)
     
     # Check which pokemon names from id offset + 1 to offset + 1 + limit = 44 match with pokemon_names
@@ -615,20 +605,8 @@ def search_pokemon(i_id, i_name):
 @app.route("/party", methods = ["GET", "POST"])
 @login_required
 def party():
-    # TODO:
     # Sets limit of sprites displayed
     limit = 44
-    
-    # Fetch pokemon IDs in the user's party from the database
-    #user_party_pokemons = PartyPokemon.query.filter_by(user_id=session["user_id"]).with_entities(PartyPokemon.pokemon_id).all()
-
-    # Extract the pokemon IDs from the result set
-    #user_party_pokemon_ids = [pokemon_id for (pokemon_id,) in user_party_pokemons]
-    
-    # Transform the user pokemon IDs into sprite indexes
-    #user_party_indexes = []
-    #for id in user_party_pokemon_ids:
-    #    user_party_indexes.append(id - 1)
     
     # Fetch user's party pokemon indexes
     user_party_indexes = fetch_user_party_pokemon_indexes(session["user_id"])
@@ -747,8 +725,6 @@ def allowed_file(filename):
 @app.route("/settings", methods = ["GET", "POST"])
 @login_required
 def settings():
-    # TODO:
-    
     # User reached route via POST
     if request.method == "POST":
         action = request.form["action"]
@@ -757,7 +733,7 @@ def settings():
             # Check if the post request has the file part
             if 'file' not in request.files:
                 flash("No file part", "error")
-                return redirect("settings.html")
+                return render_template("settings.html")
             
             # Get the file 
             file = request.files['file']
@@ -765,7 +741,7 @@ def settings():
             # If no file selected
             if file.filename == '':
                 flash("No selected file", "error")
-                return redirect("settings.html")
+                return render_template("settings.html")
             
             if file and allowed_file(file.filename):
                 # Generate a unique filename
