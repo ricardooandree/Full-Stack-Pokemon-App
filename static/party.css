@@ -93,6 +93,11 @@
     color: #fcfcfc; /* Customize the placeholder text color */
 }
 
+.alert-custom {
+    background-color: #002f61;
+    color: white; /* Optionally set text color */
+}
+
 #footer 
 {
     background-image: linear-gradient(to right, #003976, #00264f);

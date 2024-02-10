@@ -12,6 +12,8 @@
 {% block main %}
 <section id="settings">
     <div class="container text-center" style="padding-top: 150px">
+        <!-- Alert message box -->
+        <div id="message-container"></div>
         <!-- Change user's profile info -->
         <h3>Profile Information</h3>
         <hr>
@@ -120,11 +122,11 @@
     <div class="container"></div>
 </section>
 
-<script>
-    // Listen for clicks on submit changes for profile info and credentials
-    $('button[name="action"]').click(function () {
-        $('#pokemonForm').submit();
-    });
-</script>
 
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="/static/settings.js"></script>
+<script>
+    // Store the error message in a JavaScript variable
+    let errorMessage = "{{ error_message }}" || null;
+</script>
 {% endblock %}

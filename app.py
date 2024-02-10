@@ -446,7 +446,7 @@ def register():
     return render_template("homepage.html", register=True, error_message=error_message)
 
 
-@app.route("/pokedex", methods = ["GET", "POST"])
+@app.route("/pokedex", methods=["GET", "POST"])
 @login_required
 def pokedex():
     # Initialize i in the session if it's not set
@@ -455,6 +455,9 @@ def pokedex():
     
     pokemon_data = fetch_pokemon_by_id(session["i_pokedex"])
     
+    # Define message variables
+    error_message = None
+
     # User reached route via POST
     if request.method == "POST":
         action = request.form["action"]
@@ -478,19 +481,18 @@ def pokedex():
         # If user clicks "Search"
         elif action == "search":
             if not pokemon_name:
-                flash("Pokemon name is empty", "error")
-                return render_template("pokedex.html", i=session["i_pokedex"] - 1, pokemon_sprites_cache=pokemon_sprites_cache, pokemon_data=pokemon_data)
+                error_message = "Pokemon name is empty"
             
-            pokemon_name = pokemon_name.lower()
-            if not pokemon_name_exists(pokemon_name):
-                flash("Pokemon name doesn't exist", "error")
-                return render_template("pokedex.html", i=session["i_pokedex"] - 1, pokemon_sprites_cache=pokemon_sprites_cache, pokemon_data=pokemon_data)
-            
-            pokemon_data = fetch_pokemon_by_name(pokemon_name)
-            session["i_pokedex"] = pokemon_data['id']
+            else:
+                pokemon_name = pokemon_name.lower()
+                if not pokemon_name_exists(pokemon_name):
+                    error_message = "Pokemon name doesn't exist"
+                else:
+                    pokemon_data = fetch_pokemon_by_name(pokemon_name)
+                    session["i_pokedex"] = pokemon_data['id']
 
-    return render_template("pokedex.html", i=session["i_pokedex"] - 1, pokemon_sprites_cache=pokemon_sprites_cache, pokemon_data=pokemon_data)
-        
+    return render_template("pokedex.html", i=session["i_pokedex"] - 1, pokemon_sprites_cache=pokemon_sprites_cache, pokemon_data=pokemon_data, error_message=error_message)
+
 
 @app.route("/add_to_party/<int:pokemon_id>", methods=["GET"])
 @login_required
@@ -544,11 +546,12 @@ def get_pokemon_details(pokemon_id):
 
 
 def validate_search_parameters(pokemon_id, pokemon_name):
-    if not pokemon_id and not pokemon_name:
-        flash("Search parameters are empty", "error")
-        return False
+    error_message = None
 
-    return True
+    if not pokemon_id and not pokemon_name:
+        error_message = "Search parameters are empty"
+
+    return error_message
 
 
 def search_by_type(pokemon_type):
@@ -567,62 +570,62 @@ def search_by_type(pokemon_type):
 
 
 def search_pokemon(i_id, i_name):
+    error_message = None
+
     # Case 1: User inputs id and name
     if i_id and i_name:
         if i_id == i_name:
             return i_id - 1
         else:
-            flash("Pokemon ID and Pokemon name don't match", "error")
-            return -1
-    
+            error_message = "Pokemon ID and Pokemon name don't match"
+
     # Case 2: User inputs id
     elif i_id:
         return i_id - 1
-    
+
     # Case 3: User inputs name
     elif i_name:
         return i_name - 1
-    
+
     # Default case: error
     else:
-        return -1
+        error_message = "Invalid input"
+
+    return error_message
     
     
-@app.route("/party", methods = ["GET", "POST"])
+@app.route("/party", methods=["GET", "POST"])
 @login_required
 def party():
+    error_message = None
+
     # Sets limit of sprites displayed
     limit = 44
-    
+
     # Fetch user's party pokemon indexes
     user_party_indexes = fetch_user_party_pokemon_indexes(session["user_id"])
-    
+
     # Initialize i in the session if it's not set
     if "i_party" not in session:
         session["i_party"] = 0
         offset = 0
-        
+
     # If user reached route via POST
     if request.method == "POST":
         pokemon_type = request.form.get("pokemon_type")
-        
+
         # User selected a "Type"
         if pokemon_type is not None:
             # Offset to search in the current page
             offset = session["i_party"] * limit
             i_type = search_by_type(pokemon_type)
-            
-            # There's no pokemons with that type in the current page
-            if len(i_type) == 0:
-                flash("No pokemons with that type in the current page", "error")
-                return render_template("party.html", pokemon_index=-1, pokemon_type='', i=offset, limit=limit, pokemon_sprites_cache=pokemon_sprites_cache)
-            
+
             return render_template("party.html", pokemon_type=pokemon_type, i_type=i_type, pokemon_sprites_cache=pokemon_sprites_cache, user_party_indexes=user_party_indexes)
-        
+
         # User had another action: previous, next or search
-        else:    
+        else:
             action = request.form["action"]
-            
+
             # User clicks "Next"
             if action == "next":
                 session["i_party"] += 1
@@ -633,25 +636,25 @@ def party():
                 if session["i_party"] > 0:
                     session["i_party"] -= 1
                 else:
-                    session["i_party"] = 0 # IT ALREADY IS 1 - THIS IS EXTRA -
-                    
+                    session["i_party"] = 0  # IT ALREADY IS 1 - THIS IS EXTRA -
+
             # User clicks "Search"
             elif action == "search":
                 pokemon_id = request.form.get("pokemon_id")
                 pokemon_name = request.form.get("pokemon_name")
-                
+
                 # User input validation
-                if not validate_search_parameters(pokemon_id, pokemon_name):
+                error_message = validate_search_parameters(pokemon_id, pokemon_name)
+                if error_message:
                     # Offset to keep it on the same page
                     offset = session["i_party"] * limit
-                    
-                    return render_template("party.html", pokemon_index=-1, pokemon_type='', i=offset, limit=limit, pokemon_sprites_cache=pokemon_sprites_cache, user_party_indexes=user_party_indexes)
+                    return render_template("party.html", error_message=error_message, pokemon_index=-1, pokemon_type='', i=offset, limit=limit, pokemon_sprites_cache=pokemon_sprites_cache, user_party_indexes=user_party_indexes)
 
                 # Aux variables to store the pokemon ID by ID or name
                 i_id = None
                 i_name = None
-                
-                # Update aux variables 
+
+                # Update aux variables
                 if pokemon_id:
                     i_id = int(pokemon_id)
 
@@ -660,47 +663,44 @@ def party():
                     if pokemon_name_exists(pokemon_name):
                         pokemon_data = fetch_pokemon_by_name(pokemon_name)
                         i_name = pokemon_data['id']
-                    else: 
-                        flash("Pokemon name doesn't exist", "error")
-                
-                # Get searched pokemon index
-                pokemon_index = search_pokemon(i_id, i_name)
-                
+                    else:
+                        error_message = "Pokemon name doesn't exist"
+                        return render_template("party.html", error_message=error_message, pokemon_index=-1, pokemon_type='', i=0, limit=limit, pokemon_sprites_cache=pokemon_sprites_cache, user_party_indexes=user_party_indexes)
+
+                # Get searched pokemon index or error message
+                search_result = search_pokemon(i_id, i_name)
+                if isinstance(search_result, int):
+                    pokemon_index = search_result
+                else:
+                    error_message = search_result
+
                 # Check for errors with the search pokemon index
                 if pokemon_index != -1:
                     return render_template("party.html", pokemon_index=pokemon_index, pokemon_type='', i=0, limit=limit, pokemon_sprites_cache=pokemon_sprites_cache, user_party_indexes=user_party_indexes)
-            
+
     # If user reached route via GET
     pokemon_index = -1
     pokemon_type = ''
     offset = session["i_party"] * limit
-    
-    return render_template("party.html", pokemon_index=pokemon_index, pokemon_type=pokemon_type, i=offset, limit=limit, pokemon_sprites_cache=pokemon_sprites_cache, user_party_indexes=user_party_indexes)
+
+    return render_template("party.html", error_message=error_message, pokemon_index=pokemon_index, pokemon_type=pokemon_type, i=offset, limit=limit, pokemon_sprites_cache=pokemon_sprites_cache, user_party_indexes=user_party_indexes)
 
 
 def validate_settings_parameters(name, age, gender, country, city, description):
+    error_message = None
+
     if not name and not age and not gender and not country and not city and not description:
-        flash("Please input any info", "error")
-        return False
-    
-    if len(name) > 25:
-        print(len(name))
-        flash("Name is too long, 25 characters max please", "error")
-        return False
+        error_message = "Please input any info"
+    elif len(name) > 25:
+        error_message = "Name is too long, 25 characters max please"
+    elif len(country) > 25:
+        error_message = "Country name is too long, 25 characters max please"
+    elif len(city) > 25:
+        error_message = "City name is too long, 25 characters max please"
+    elif len(description) > 500:
+        error_message = "Description is too long, 500 characters max please"
 
-    if len(country) > 25:
-        flash("Country name is too long, 25 characters max please", "error")
-        return False
-
-    if len(city) > 25:
-        flash("City name is too long, 25 characters max please", "error")
-        return False
-
-    if len(description) > 500:
-        flash("Description is too long, 500 characters max please", "error")
-        return False
-    
-    return True
+    return error_message
     
     
 def allowed_file(filename):
@@ -708,27 +708,29 @@ def allowed_file(filename):
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
            
            
-@app.route("/settings", methods = ["GET", "POST"])
+@app.route("/settings", methods=["GET", "POST"])
 @login_required
 def settings():
+    error_message = None
+    
     # User reached route via POST
     if request.method == "POST":
         action = request.form["action"]
-        
+
         if action == "avatar":
             # Check if the post request has the file part
             if 'file' not in request.files:
-                flash("No file part", "error")
-                return render_template("settings.html")
-            
-            # Get the file 
+                error_message = "No file part"
+                return render_template("settings.html", error_message=error_message)
+
+            # Get the file
             file = request.files['file']
-            
+
             # If no file selected
             if file.filename == '':
-                flash("No selected file", "error")
-                return render_template("settings.html")
-            
+                error_message = "No selected file"
+                return render_template("settings.html", error_message=error_message)
+
             if file and allowed_file(file.filename):
                 # Generate a unique filename
                 filename = secure_filename(file.filename)
@@ -737,24 +739,23 @@ def settings():
                 # Save the file to the specified folder
                 file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
                 file.save(file_path)
-            
+
                 # Update the user_info table with the file path or filename
                 user_info = UsersInfo.query.filter_by(user_id=session["user_id"]).first()
-                
+
                 if user_info is not None:
                     user_info.image_path = file_path
                     db.session.commit()
-                    
-                flash("Avatar successfully uploaded", "success")
+
                 return redirect("/")
             else:
-                flash("File type not allowed, allowed types: png, jpg, jpeg", "error")
-                return render_template("settings.html")
-                    
+                error_message = "File type not allowed, allowed types: png, jpg, jpeg"
+                return render_template("settings.html", error_message=error_message)
+
         elif action == "info":
             # Get user_info object
             user_info = UsersInfo.query.filter_by(user_id=session["user_id"]).first()
-            
+
             # Get input form data
             name = request.form.get("name")
             age = request.form.get("age")
@@ -762,94 +763,93 @@ def settings():
             country = request.form.get("country")
             city = request.form.get("city")
             description = request.form.get("description")
-            
+
             # Input validation
-            valid = validate_settings_parameters(name, age, gender, country, city, description)
+            error_message = validate_settings_parameters(name, age, gender, country, city, description)
             
-            if not valid:
-                return render_template("settings.html")
-            
+            if error_message:
+                return render_template("settings.html", error_message=error_message)
+
             # Update the user_info table
             if name:
                 user_info.name = name
-            
+
             if age:
                 user_info.age = age
-                
+
             if gender:
                 user_info.gender = gender
-                
+
             if country:
                 user_info.country = country
-                
+
             if city:
                 user_info.city = city
-            
+
             if description:
                 user_info.description = description
-                
+
             # Commit the changes to the database
             db.session.commit()
-        
+
         elif action == "credentials":
             # Get user object
             user = Users.query.filter_by(id=session["user_id"]).first()
-            
+
             username = request.form.get("username")
             password = request.form.get("password")
             password_confirmation = request.form.get("password_confirmation")
-            
+
             # Input validation
             if not username and not password and not password_confirmation:
-                flash("Please input any info", "error")
-                return render_template("settings.html")
-            
+                error_message = "Please input any info"
+                return render_template("settings.html", error_message=error_message)
+
             # User wants to change username
             if username:
-                exisiting_user = Users.query.filter_by(username=username).first()
-                if exisiting_user:
-                    flash("Username already exists", "error")
-                    return render_template("settings.html")
-                   
-                # Update user's username 
+                existing_user = Users.query.filter_by(username=username).first()
+                if existing_user:
+                    error_message = "Username already exists"
+                    return render_template("settings.html", error_message=error_message)
+
+                # Update user's username
                 user.username = username
-                
+
                 # Commit the changes to the database
                 db.session.commit()
-        
+
             # User wants to change password
             if password:
                 if password_confirmation:
                     if password != password_confirmation:
-                        flash("Passwords don't match", "error")
-                        return render_template("settings.html")
+                        error_message = "Passwords don't match"
+                        return render_template("settings.html", error_message=error_message)
 
                     # Ensure password has at least 8 characters
                     if len(password) < 1:
-                        flash("Password must be at least 8 characters long", "error")
-                        return render_template("settings.html")
-                    
+                        error_message = "Password must be at least 8 characters long"
+                        return render_template("settings.html", error_message=error_message)
+
                     # Update user's password with hash
                     user.password = generate_password_hash(password)
-                    
+
                     # Commit the changes to the database
                     db.session.commit()
-                      
+
                 else:
-                    flash("Insert password confirmation", "error")
-                    return render_template("settings.html")
-                
+                    error_message = "Insert password confirmation"
+                    return render_template("settings.html", error_message=error_message)
+
             # User only input password confirmation
             elif password_confirmation:
-                flash("Insert password both fields of password", "error")
-                return render_template("settings.html")
-            
+                error_message = "Insert password both fields of password"
+                return render_template("settings.html", error_message=error_message)
+
         # Redirect to the main page
-        flash("Changes saved", "success")
-        return redirect("/") 
-    
+        return redirect("/")
+
     else:
-        return render_template("settings.html")
+        return render_template("settings.html", error_message=error_message)
 
 
 if __name__ == '__main__':

@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let modal = document.getElementById('pokemon-modal');
     let sprites = document.querySelectorAll('.clickable-sprite');
     let alertMessage = document.getElementById('message-container');
+    let resultSuccess = false;
 
     sprites.forEach(sprite => {
         sprite.addEventListener('click', async () => {
@@ -52,10 +53,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         try {
                             let response = await fetch(`/${imageId === 'party-sprite' ? 'remove_from_party' : 'add_to_party'}/${pokemonId}`);
                             let result = await response.json();
+                            
+                            // Check if the operation was successful
+                            sessionStorage.setItem('resultSuccess', result.success.toString());
 
                             // Store the alert message in session storage
                             sessionStorage.setItem('alertMessage', result.message);
-
+                            
                             // Close the modal
                             modal.style.display = 'none';
 
@@ -98,23 +102,54 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Check for the existence of the alert message in session storage
     let storedAlertMessage = sessionStorage.getItem('alertMessage');
+    let storesResultSuccess = sessionStorage.getItem('resultSuccess') === 'true';
+
     if (storedAlertMessage) {
         // Display the alert message
         let messageContainer = document.getElementById('message-container');
         let messageDiv = document.createElement('div');
-        messageDiv.classList.add('alert', 'alert-dark');
+
+        
+        console.log('Result success:', storesResultSuccess);
+        if (storesResultSuccess) {
+            messageDiv.classList.add('alert', 'alert-success');
+            console.log("SUCCESS");
+        }
+        else {
+            messageDiv.classList.add('alert', 'alert-danger');
+            console.log("DANGER");
+        }
+        //messageDiv.classList.add('alert', 'alert-dark');
         messageDiv.setAttribute('role', 'alert');
         messageDiv.innerText = storedAlertMessage;
         messageContainer.appendChild(messageDiv);
-
+        
         // Hide the message after a few seconds
         setTimeout(() => {
             messageDiv.style.display = 'none';
             alertMessage.style.display = 'none';
-        }, 5000);  // Hide after 5 seconds
+        }, 4000);  // Hide after 5 seconds
 
         // Clear the stored alert message in session storage
         sessionStorage.removeItem('alertMessage');
+
+        sessionStorage.removeItem('resultSuccess');
+    }
+
+    // Check if there's an error message from the backend
+    if (errorMessage && errorMessage !== "None") {
+        displayErrorMessage(errorMessage);
+    }
+
+    // Function to display error message
+    function displayErrorMessage(message) {
+        let messageContainer = document.getElementById('message-container');
+        messageContainer.innerHTML = `<div class="alert alert-danger text-center">${message}</div>`;
+
+        // Clear the message after 4 seconds
+        setTimeout(() => {
+            messageContainer.innerHTML = '';
+        }, 4000);
     }
 
     // Listen for the change event on the type dropdown

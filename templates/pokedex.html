@@ -12,6 +12,8 @@
 {% block main %}
 <section id="pokedex">
     <div class="container text-center" style="padding-top: 80px">
+        <!-- Alert message box -->
+        <div id="message-container"></div>
         <div class="row justify-content-center align-items-center">
             <div class="col-md-8 position-relative" id="pokedex-section">
                 <!-- Blob Image -->
@@ -78,5 +80,9 @@
 {% block script %}
     <!-- JS script -->
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script>
+        // Store the error message in a JavaScript variable
+        let errorMessage = "{{ error_message }}" || null;
+    </script>
     <script src="/static/pokedex.js"></script>
 {% endblock %}
