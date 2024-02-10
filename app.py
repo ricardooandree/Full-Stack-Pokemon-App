@@ -82,7 +82,7 @@ class UsersInfo(db.Model):
 
 # Get the temporary directory path
 cache_directory = os.path.join(tempfile.gettempdir(), 'pokebase_cache')
-print(cache_directory)
+
 # Ensure the cache directory exists
 os.makedirs(cache_directory, exist_ok=True)
 
