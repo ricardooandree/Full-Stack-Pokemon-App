@@ -1,12 +1,13 @@
 import os
 import pokebase as pb
 import requests
+import secrets
 
-#from cs50 import SQL
-from flask import Flask, flash, redirect, render_template, request, session, jsonify
+from flask import Flask, redirect, render_template, request, session, jsonify
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
+from werkzeug.exceptions import HTTPException
 from datetime import datetime
 from functools import wraps
 from flask_sqlalchemy import SQLAlchemy
@@ -15,13 +16,11 @@ from flask_sqlalchemy import SQLAlchemy
 UPLOAD_FOLDER = 'static/uploads/'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 ##################################################################################################
+
 # Application configuration
 app = Flask(__name__)
+app.config["SECRET_KEY"] = secrets.token_hex(16)  # Generates a 32-character hexadecimal string
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
-# TODO: Security configuration
-#from flask_talisman import Talisman
-#talisman = Talisman(app, content_security_policy=None)
 
 
 # Database configuration
@@ -70,7 +69,6 @@ class UsersInfo(db.Model):
 # Configure session to use filesystem (instead of signed cookies)
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
-# TODO: app.config["SECRET_KEY"] = "your_secret_key_here"
 Session(app)
 
 ##################################################################################################
@@ -315,10 +313,9 @@ def login_required(f):
     return decorated_function
 
 
-# TODO: Error handling 
-#@app.errorhandler(HTTPException)
-#def page_not_found(e):
-#    return render_template('404.html'), 404
+@app.errorhandler(HTTPException)
+def page_not_found(e):
+    return render_template("404.html"), 404
 
 
 @app.route("/", methods = ["GET"])
@@ -418,13 +415,10 @@ def register():
             if existing_user:
                 error_message = "Username is taken"
             else:
-                # Ensure password has at least 8 characters FIXME:
-                if len(password) < 1:
+                # Ensure password has at least 8 characters
+                if len(password) < 8:
                     error_message = "Password must be at least 8 characters long"
-                    # TODO: Ensure password has at least 2 digits and 1 uppercase letter
-                    #if not re.search(r'\d.*\d', password) or not any(char.isupper() for char in password):
-                    #    flash("Password must have at least 2 digits and 1 uppercase letter", "error")
-                    #    return render_template("register.html")
+                    
                 else:
                     # Insert user into database
                     new_user = Users(username=username, password=generate_password_hash(password))
