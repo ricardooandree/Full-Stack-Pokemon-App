@@ -327,29 +327,11 @@ def login_required(f):
 def page_not_found(e):
     return render_template("404.html"), 404
 
+# TODO:
+@app.route("/favicon.ico")
+def favicon():
+    return "", 204
 
-@app.route("/", methods = ["GET"])
-@login_required
-def dashboard():
-    # Fetch user's party pokemon indexes
-    user_party_indexes = fetch_user_party_pokemon_indexes(session["user_id"])
-    
-    # Get user_info object
-    user_info = UsersInfo.query.filter_by(user_id=session["user_id"]).first()
-    
-    # Get user object
-    user = Users.query.filter_by(id=session["user_id"]).first()
-    
-    # Get user username
-    username = user.username
-    
-    # Convert string to datetime object
-    datetime_obj = datetime.strptime(str(user_info.join_date), "%Y-%m-%d %H:%M:%S.%f")
-
-    # Format datetime object
-    date = datetime_obj.strftime("%b %d, %Y")
-    
-    return render_template("dashboard.html", date=date, username=username, user_info=user_info, user_party_indexes=user_party_indexes, pokemon_sprites_cache=pokemon_sprites_cache)
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -386,6 +368,29 @@ def login():
 
     # Render the login page with error message
     return render_template("homepage.html", login=True, error_message=error_message)
+
+@app.route("/", methods = ["GET"])
+@login_required
+def dashboard():
+    # Fetch user's party pokemon indexes
+    user_party_indexes = fetch_user_party_pokemon_indexes(session["user_id"])
+    
+    # Get user_info object
+    user_info = UsersInfo.query.filter_by(user_id=session["user_id"]).first()
+    
+    # Get user object
+    user = Users.query.filter_by(id=session["user_id"]).first()
+    
+    # Get user username
+    username = user.username
+    
+    # Convert string to datetime object
+    datetime_obj = datetime.strptime(str(user_info.join_date), "%Y-%m-%d %H:%M:%S.%f")
+
+    # Format datetime object
+    date = datetime_obj.strftime("%b %d, %Y")
+    
+    return render_template("dashboard.html", date=date, username=username, user_info=user_info, user_party_indexes=user_party_indexes, pokemon_sprites_cache=pokemon_sprites_cache)
 
 
 @app.route("/logout")
