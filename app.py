@@ -1,3 +1,6 @@
+###################################################################################################
+#######################################       IMPORTS       #######################################
+###################################################################################################
 import os
 import pokebase as pb
 import requests
@@ -11,24 +14,31 @@ from werkzeug.exceptions import HTTPException
 from datetime import datetime
 from functools import wraps
 from flask_sqlalchemy import SQLAlchemy
+from helperFunctions import validate_search_parameters, search_pokemon, validate_settings_parameters
 
-##################################################################################################
+
+###################################################################################################
+###############################       APP CONFIGURATION/SETUP       ###############################
+###################################################################################################
+# Global variables for file uploads set up
 UPLOAD_FOLDER = 'static/uploads/'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
-##################################################################################################
 
-# Application configuration
+
+# Flask-Session configuration - configure session to use filesystem (instead of signed cookies)
 app = Flask(__name__)
 app.config["SECRET_KEY"] = secrets.token_hex(16)  # Generates a 32-character hexadecimal string
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config["SESSION_PERMANENT"] = False
+app.config["SESSION_TYPE"] = "filesystem"
+Session(app)
 
 
-# Database configuration
+# Database configuration + class-models
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(app.root_path, 'site.db')
 db = SQLAlchemy(app)
 
 
-# Database class-models
 class Users(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
@@ -66,30 +76,17 @@ class UsersInfo(db.Model):
     user = db.relationship('Users', back_populates='user_info', lazy=True)
 
 
-# Configure session to use filesystem (instead of signed cookies)
-app.config["SESSION_PERMANENT"] = False
-app.config["SESSION_TYPE"] = "filesystem"
-Session(app)
-
-##################################################################################################
 # Set the Pokebase cache location
 pb.cache.set_cache('C:/Users/ricar/projects/cs50-final-project/.cache/pokebase')
 
 # Global cache for Pokemon sprites and data
 pokemon_sprites_cache = [pb.SpriteResource('pokemon', pokemon_id) for pokemon_id in range(1, 494)]
-    
-#pokemon_sprites_cache = []
-# Function to fetch Pokemon sprites from PokeAPI
-#def fetch_pokemon_sprites(limit):
-#    for i in range(1, limit + 1):
-#        response = requests.get(f'https://pokeapi.co/api/v2/pokemon/{i}/')
-#        if response.status_code == 200:
-#            pokemon_data = response.json()
-#            sprite_url = pokemon_data['sprites']['front_default']
-#            pokemon_sprites_cache.append({'id': i, 'url': sprite_url})
-            
 pokemon_data_cache = []
 
+
+###################################################################################################
+#############################       CACHING/FETCHING FUNCTIONS       ##############################
+###################################################################################################
 # Fetch pokemon data from the PokeAPI
 def fetch_pokemon_data(url):
     # Send a GET request to the PokeAPI
@@ -276,6 +273,7 @@ def pokemon_name_exists(pokemon_name):
     return False
 
 
+# Checks if pokemon ID exists
 def pokemon_id_exists(pokemon_id):
     # Check if data is already cached
     for pokemon_data in pokemon_data_cache:
@@ -293,7 +291,9 @@ precache_pokemon_names()
 fetch_pokemon_by_id(1)
 
 
-##################################################################################################
+###################################################################################################
+#######################################       ROUTES        #######################################
+###################################################################################################
 @app.after_request
 def after_request(response):
     """Ensure responses aren't cached"""
@@ -539,13 +539,7 @@ def get_pokemon_details(pokemon_id):
     return fetch_pokemon_by_id(pokemon_id)
 
 
-def validate_search_parameters(pokemon_id, pokemon_name):
-    error_message = None
-
-    if not pokemon_id and not pokemon_name:
-        error_message = "Search parameters are empty"
-
-    return error_message
+#HERE: def validate_search_parameters()
 
 
 def search_by_type(pokemon_type):
@@ -563,29 +557,7 @@ def search_by_type(pokemon_type):
     return pokemon_ids
 
 
-def search_pokemon(i_id, i_name):
-    error_message = None
-
-    # Case 1: User inputs id and name
-    if i_id and i_name:
-        if i_id == i_name:
-            return i_id - 1
-        else:
-            error_message = "Pokemon ID and Pokemon name don't match"
-
-    # Case 2: User inputs id
-    elif i_id:
-        return i_id - 1
-
-    # Case 3: User inputs name
-    elif i_name:
-        return i_name - 1
-
-    # Default case: error
-    else:
-        error_message = "Invalid input"
-
-    return error_message
+#HERE: def search_pokemon()
     
     
 @app.route("/party", methods=["GET", "POST"])
@@ -665,12 +637,9 @@ def party():
                 search_result = search_pokemon(i_id, i_name)
                 if isinstance(search_result, int):
                     pokemon_index = search_result
+                    return render_template("party.html", pokemon_index=pokemon_index, pokemon_type='', i=0, limit=limit, pokemon_sprites_cache=pokemon_sprites_cache, user_party_indexes=user_party_indexes)
                 else:
                     error_message = search_result
-
-                # Check for errors with the search pokemon index
-                if pokemon_index != -1:
-                    return render_template("party.html", pokemon_index=pokemon_index, pokemon_type='', i=0, limit=limit, pokemon_sprites_cache=pokemon_sprites_cache, user_party_indexes=user_party_indexes)
 
     # If user reached route via GET
     pokemon_index = -1
@@ -680,22 +649,8 @@ def party():
     return render_template("party.html", error_message=error_message, pokemon_index=pokemon_index, pokemon_type=pokemon_type, i=offset, limit=limit, pokemon_sprites_cache=pokemon_sprites_cache, user_party_indexes=user_party_indexes)
 
 
-def validate_settings_parameters(name, age, gender, country, city, description):
-    error_message = None
+#HERE: def validate_settings_parameters()
 
-    if not name and not age and not gender and not country and not city and not description:
-        error_message = "Please input any info"
-    elif len(name) > 25:
-        error_message = "Name is too long, 25 characters max please"
-    elif len(country) > 25:
-        error_message = "Country name is too long, 25 characters max please"
-    elif len(city) > 25:
-        error_message = "City name is too long, 25 characters max please"
-    elif len(description) > 500:
-        error_message = "Description is too long, 500 characters max please"
-
-    return error_message
-    
     
 def allowed_file(filename):
     return '.' in filename and \
