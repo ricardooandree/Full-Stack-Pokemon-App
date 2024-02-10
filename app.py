@@ -77,7 +77,7 @@ class UsersInfo(db.Model):
     user = db.relationship('Users', back_populates='user_info', lazy=True)
 
 
-# Set the Pokebase cache location
+# Set the Pokebase cache location TODO: - local cache location
 #pb.cache.set_cache('C:/Users/ricar/projects/cs50-final-project/.cache/pokebase')
 
 # Get the temporary directory path
@@ -333,6 +333,29 @@ def favicon():
     return "", 204
 
 
+@app.route("/", methods = ["GET"])
+@login_required
+def dashboard():
+    # Fetch user's party pokemon indexes
+    user_party_indexes = fetch_user_party_pokemon_indexes(session["user_id"])
+    
+    # Get user_info object
+    user_info = UsersInfo.query.filter_by(user_id=session["user_id"]).first()
+    
+    # Get user object
+    user = Users.query.filter_by(id=session["user_id"]).first()
+    
+    # Get user username
+    username = user.username
+    
+    # Convert string to datetime object
+    datetime_obj = datetime.strptime(str(user_info.join_date), "%Y-%m-%d %H:%M:%S.%f")
+
+    # Format datetime object
+    date = datetime_obj.strftime("%b %d, %Y")
+    
+    return render_template("dashboard.html", date=date, username=username, user_info=user_info, user_party_indexes=user_party_indexes, pokemon_sprites_cache=pokemon_sprites_cache)
+
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -368,29 +391,6 @@ def login():
 
     # Render the login page with error message
     return render_template("homepage.html", login=True, error_message=error_message)
-
-@app.route("/", methods = ["GET"])
-@login_required
-def dashboard():
-    # Fetch user's party pokemon indexes
-    user_party_indexes = fetch_user_party_pokemon_indexes(session["user_id"])
-    
-    # Get user_info object
-    user_info = UsersInfo.query.filter_by(user_id=session["user_id"]).first()
-    
-    # Get user object
-    user = Users.query.filter_by(id=session["user_id"]).first()
-    
-    # Get user username
-    username = user.username
-    
-    # Convert string to datetime object
-    datetime_obj = datetime.strptime(str(user_info.join_date), "%Y-%m-%d %H:%M:%S.%f")
-
-    # Format datetime object
-    date = datetime_obj.strftime("%b %d, %Y")
-    
-    return render_template("dashboard.html", date=date, username=username, user_info=user_info, user_party_indexes=user_party_indexes, pokemon_sprites_cache=pokemon_sprites_cache)
 
 
 @app.route("/logout")
@@ -790,7 +790,7 @@ def settings():
                         return render_template("settings.html", error_message=error_message)
 
                     # Ensure password has at least 8 characters
-                    if len(password) < 1:
+                    if len(password) < 8:
                         error_message = "Password must be at least 8 characters long"
                         return render_template("settings.html", error_message=error_message)
 
@@ -821,4 +821,4 @@ if __name__ == '__main__':
         db.create_all()  # Create tables before running the app
     #app.run(debug=True) # Development mode
     #app.run(debug=False, host='0.0.0.0', port=os.environ.get('PORT', 5000))
-    app.run(threaded=True)
+    app.run()
